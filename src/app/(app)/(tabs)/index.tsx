@@ -1,7 +1,6 @@
 // src/app/(app)/(tabs)/index.tsx
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useCourses } from '@/hooks/courses/useCourses';
@@ -11,6 +10,7 @@ import { EventItem } from '@/services/events/event.service';
 import { EventCarousel } from '@/components/events/EventCarousel';
 import { EventRegisterModal } from '@/components/events/EventRegisterModal';
 import { ScreenWrapper } from '@/components/common/ScreenWrapper';
+
 export default function HomeScreen() {
   const router = useRouter();
   const companyUid = process.env.EXPO_PUBLIC_COMPANY_UID as string;
@@ -26,30 +26,34 @@ export default function HomeScreen() {
   const newCourses = courses.filter(c => c.uid !== ongoingCourse?.uid).slice(0, 3);
 
   return (
-  <ScreenWrapper statusBarStyle="dark" >
-      <ScrollView className="px-6 pt-4 pb-12" showsVerticalScrollIndicator={false}>
-
-        {/* Header Limpio con Saludo y Avatar */}
-        <View className="flex-row items-center justify-between mb-6">
+    <ScreenWrapper statusBarStyle="dark">
+      <ScrollView
+        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header con saludo y avatar */}
+        <View className="flex-row items-center justify-between mb-8">
           <View>
-            <Text className="text-gray-400 text-xs font-semibold uppercase tracking-wider">
+            <Text className="text-carbon/60 text-base font-medium">
               {user?.profile?.first_name ? `Hola, ${user.profile.first_name}` : 'Miembro Básico'}
             </Text>
-            <Text className="text-gray-900 text-2xl font-black tracking-tight mt-0.5">¡A aprender hoy!</Text>
+            <Text className="text-carbon text-3xl font-extrabold tracking-tight mt-0.5">
+              ¡A aprender hoy!
+            </Text>
           </View>
           <TouchableOpacity
             onPress={() => router.push('/profile')}
-            className="w-12 h-12 rounded-full bg-gray-200 items-center justify-center border-2 border-white shadow-sm overflow-hidden"
+            className="w-12 h-12 rounded-full bg-arena items-center justify-center overflow-hidden"
           >
             {user?.profile?.avatar_url ? (
               <Image source={{ uri: user.profile.avatar_url }} className="w-full h-full" />
             ) : (
-              <Ionicons name="person" size={20} color="#E24A85" />
+              <Ionicons name="person" size={20} color="#141716" />
             )}
           </TouchableOpacity>
         </View>
 
-        {/* 📅 Componente de Próximos Eventos */}
+
         <EventCarousel
           events={events}
           isLoading={eventsLoading}
@@ -59,96 +63,125 @@ export default function HomeScreen() {
           }}
         />
 
-        {/* 🌟 Título de Sección: Curso en Curso */}
-        <View className="flex-row justify-between items-center mb-4 px-1">
-          <Text className="text-gray-900 text-lg font-black tracking-tight">Tu Aprendizaje</Text>
+
+        <View className="flex-row justify-between items-center mb-4">
+          {/* 👇 Título principal alineado con el diseño de la imagen */}
+          <Text className="text-carbon text-xl font-extrabold tracking-tight">Continúa aprendiendo</Text>
         </View>
 
-        {/* 🌟 Tarjeta de Curso en Curso */}
         {coursesLoading ? (
-          <ActivityIndicator color="#E24A85" className="my-10" />
+          <ActivityIndicator color="#A6AE93" className="my-10" />
         ) : ongoingCourse ? (
           <TouchableOpacity
             activeOpacity={0.95}
             onPress={() => router.push({ pathname: '/course-detail', params: { courseUid: ongoingCourse.uid } })}
-            className="bg-[#FFE5EC] border border-[#FFD1DC] rounded-[32px] overflow-hidden mb-8 shadow-sm"
+            // 👇 Tarjeta horizontal con fondo Carbón
+            className="bg-carbon rounded-[32px] overflow-hidden mb-10 shadow-lg shadow-carbon/20 flex-row items-center h-44"
           >
+            {/* 👇 COLUMNA IZQUIERDA: Imagen del curso */}
             {ongoingCourse.cover_url && (
-              <Image source={{ uri: ongoingCourse.cover_url }} className="w-full h-48 bg-white/20" resizeMode="cover" />
-            )}
-            <View className="p-6">
-              <View className="flex-row justify-between items-center mb-2">
-                <View className="bg-[#E24A85] px-3 py-1 rounded-full">
-                  <Text className="text-white text-[10px] font-extrabold uppercase tracking-widest">
-                    {ongoingCourse.is_enrolled ? 'En Curso' : 'Destacado'}
-                  </Text>
-                </View>
-                <Text className="text-gray-500 text-xs font-semibold">{ongoingCourse.modules_count} Módulos</Text>
+              <View className="w-2/5 h-full">
+                <Image
+                  source={{ uri: ongoingCourse.cover_url }}
+                  className="w-full h-full bg-tiza"
+                  resizeMode="cover"
+                />
               </View>
+            )}
 
-              <Text className="text-gray-900 text-2xl font-black mb-1" numberOfLines={1}>{ongoingCourse.title}</Text>
-              <Text className="text-gray-600 text-sm mb-5 leading-relaxed" numberOfLines={2}>{ongoingCourse.description}</Text>
+            {/* 👇 COLUMNA DERECHA: Información y progreso */}
+            <View className="p-5 flex-1 justify-center h-full">
+              {/* Etiqueta / Categoría */}
+              <Text className="text-salvia text-xs font-semibold mb-2">
+                {ongoingCourse.is_enrolled ? 'En Curso' : 'Destacado'}
+              </Text>
 
+              {/* Título del curso */}
+              <Text className="text-blanco text-xl font-extrabold mb-4 tracking-tight leading-tight" numberOfLines={2}>
+                {ongoingCourse.title}
+              </Text>
+
+              {/* Barra de progreso (Solo si está inscrito) */}
               {ongoingCourse.is_enrolled && (
-                <View className="mb-5 bg-white/60 p-3.5 rounded-2xl">
-                  <View className="flex-row justify-between mb-1.5">
-                    <Text className="text-gray-600 text-xs font-bold">Progreso del curso</Text>
-                    <Text className="text-[#E24A85] text-xs font-black">25%</Text>
+                <View className="mb-4 flex-row items-center">
+                  <View className="flex-1 bg-blanco/20 h-1.5 rounded-full overflow-hidden">
+                    <View className="bg-salvia h-full w-[62%] rounded-full" />
+                    {/* Nota: 'w-[62%]' es un ejemplo estático basado en tu imagen. Deberás enlazarlo a tu estado real de progreso. */}
                   </View>
-                  <View className="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden">
-                    <View className="bg-[#E24A85] h-full w-[25%] rounded-full" />
-                  </View>
+                  <Text className="text-blanco text-xs font-bold ml-3">62%</Text>
                 </View>
               )}
 
-              <View className="bg-gray-900 py-4 rounded-2xl items-center flex-row justify-center shadow">
-                <Text className="text-white font-bold text-sm mr-2">
-                  {ongoingCourse.is_enrolled ? 'Continuar Aprendiendo' : 'Empezar Curso'}
+              {/* Botón de Reanudar */}
+              <View className="self-start flex-row items-center bg-salvia rounded-full px-5 h-10 mt-auto">
+                <Ionicons name="play-outline" size={16} color="#141716" />
+                <Text className="text-carbon font-bold text-sm ml-2">
+                  {ongoingCourse.is_enrolled ? 'Reanudar' : 'Empezar'}
                 </Text>
-                <Ionicons name="arrow-forward" size={16} color="white" />
               </View>
             </View>
           </TouchableOpacity>
         ) : null}
-        {/* Sección: Nuevos Cursos */}
-        <View className="flex-row justify-between items-center mb-4 px-1">
-          <Text className="text-gray-900 text-lg font-black tracking-tight">Nuevos Cursos</Text>
+
+        {/* Sección: Recomendados */}
+        <View className="flex-row justify-between items-center mb-4">
+          <Text className="text-carbon text-xl font-extrabold tracking-tight">Recomendados</Text>
           <TouchableOpacity onPress={() => router.push('/courses')}>
-            <Text className="text-[#E24A85] font-bold text-xs uppercase tracking-wider">Ver todos</Text>
+            <Text className="text-carbon/60 font-semibold text-sm">Ver todos</Text>
           </TouchableOpacity>
         </View>
 
-        {/* 📚 Nuevos Cursos */}
-        {newCourses.map((course) => (
-          <TouchableOpacity
-            key={course.uid}
-            onPress={() => router.push({ pathname: '/course-detail', params: { courseUid: course.uid } })}
-            className="bg-white border border-gray-100 rounded-3xl p-4 mb-3.5 flex-row items-center shadow-sm"
-          >
-            {course.cover_url ? (
-              <Image source={{ uri: course.cover_url }} className="w-20 h-20 rounded-2xl bg-gray-100 mr-4" resizeMode="cover" />
-            ) : (
-              <View className="w-20 h-20 rounded-2xl bg-gray-100 items-center justify-center mr-4">
-                <Ionicons name="book-outline" size={24} color="#9CA3AF" />
-              </View>
-            )}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{ marginHorizontal: -24 }}
+          contentContainerStyle={{ paddingHorizontal: 24 }}
+        >
+          {newCourses.map((course, index) => (
+            <TouchableOpacity
+              key={course.uid}
+              activeOpacity={0.9}
+              onPress={() => router.push({ pathname: '/course-detail', params: { courseUid: course.uid } })}
+              // 👇 Cambiamos a w-72 para darles el formato horizontal y rectangular de la imagen
+              className="w-72 bg-blanco rounded-[28px] overflow-hidden mr-4 shadow-sm shadow-carbon/5"
+            >
+              {/* Área de la imagen/portada rectangular */}
+              <View className={`h-36 ${index % 2 === 0 ? 'bg-salvia' : 'bg-carbon'}`}>
+                {course.cover_url ? (
+                  <Image source={{ uri: course.cover_url }} className="w-full h-full" resizeMode="cover" />
+                ) : (
+                  <View className="w-full h-full items-center justify-center">
+                    <Ionicons
+                      name="book-outline"
+                      size={28}
+                      color={index % 2 === 0 ? '#141716' : '#FFFFFF'}
+                    />
+                  </View>
+                )}
 
-            <View className="flex-1 justify-center">
-              <View className="flex-row items-center justify-between mb-1">
-                <Text className="text-[#E24A85] text-[10px] font-black uppercase tracking-wider">
-                  {course.is_free ? 'Gratis' : `$${course.price}`}
+                {/* Etiqueta blanca flotante */}
+                <View className="absolute top-4 left-4 bg-blanco/95 px-3 py-1 rounded-full shadow-sm">
+                  <Text className="text-carbon text-[11px] font-extrabold uppercase tracking-wider">
+                    {course.is_free ? 'Gratis' : `$${course.price}`}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Área de texto inferior */}
+              <View className="p-4 pt-3">
+                <Text className="text-carbon font-extrabold text-base mb-1 tracking-tight" numberOfLines={1}>
+                  {course.title}
                 </Text>
-                <Text className="text-gray-400 text-xs font-medium">{course.modules_count} módulos</Text>
+                <Text className="text-carbon/60 text-sm font-medium" numberOfLines={1}>
+                  {course.modules_count} módulos • {course.is_free ? 'Intro' : 'Premium'}
+                </Text>
               </View>
-              <Text className="text-gray-900 font-bold text-base mb-1" numberOfLines={1}>{course.title}</Text>
-              <Text className="text-gray-500 text-xs" numberOfLines={1}>{course.description || 'Explora este contenido y potencia tus habilidades.'}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
-
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </ScrollView>
 
-      {/* 🚀 Modal de Registro Componentizado */}
+
       <EventRegisterModal
         visible={isModalVisible}
         event={selectedEvent}
@@ -161,9 +194,9 @@ export default function HomeScreen() {
         }}
         onClose={() => setIsModalVisible(false)}
         onSuccess={() => {
-          // Opcional: recargar datos si es necesario
+
         }}
       />
- </ScreenWrapper>
+    </ScreenWrapper>
   );
 }

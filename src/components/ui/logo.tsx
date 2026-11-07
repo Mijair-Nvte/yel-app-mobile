@@ -1,23 +1,14 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
 export function Logo() {
   return (
-    <View className="items-center mb-10">
-      <View
-        className="bg-[#E24A85] w-20 h-20 rounded-3xl items-center justify-center mb-4"
-        style={{
-          shadowColor: '#E24A85',
-          shadowOpacity: 0.5,
-          shadowRadius: 24,
-          shadowOffset: { width: 0, height: 10 },
-          elevation: 12,
-        }}
-      >
-        <Ionicons name="checkmark-outline" size={46} color="white" />
+    <View className="items-center mb-8">
+      <View className="bg-carbon w-20 h-20 rounded-full items-center justify-center mb-4 shadow-md shadow-carbon/20">
+        {/* Aquí puedes reemplazar la 'B' por el icono/svg de Beliv en el futuro */}
+        <Text className="text-blanco font-extrabold text-4xl">B</Text>
       </View>
-      <Text className="text-white font-extrabold text-2xl tracking-tight">Ya Estoy Listo</Text>
+      <Text className="text-carbon font-extrabold text-2xl tracking-tight uppercase">Beliv</Text>
     </View>
   );
 }

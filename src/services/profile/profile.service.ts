@@ -50,4 +50,10 @@ export const profileService = {
     });
     return response.data;
   },
+
+  deleteAccount: async () => {
+    const response = await api.delete('/account');
+    return response.data;
+  },
+  
 };

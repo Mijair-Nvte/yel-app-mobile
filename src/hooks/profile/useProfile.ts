@@ -65,6 +65,36 @@ export const useProfile = () => {
     }
   };
 
+  const deleteAccount = async (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      Alert.alert(
+        'Eliminar cuenta',
+        '¿Estás seguro de que deseas eliminar tu cuenta? Esta acción es irreversible y perderás acceso a todos tus cursos y eventos.',
+        [
+          { text: 'Cancelar', style: 'cancel', onPress: () => resolve(false) },
+          {
+            text: 'Eliminar',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                setIsUpdating(true);
+                const res = await profileService.deleteAccount();
+                Alert.alert('Cuenta eliminada', res.message || 'Tu cuenta ha sido eliminada correctamente.');
+                resolve(true); // Retorna true si fue exitoso
+              } catch (err: any) {
+                Alert.alert('Error', err.response?.data?.message || 'No se pudo eliminar la cuenta. Inténtalo de nuevo.');
+                resolve(false);
+              } finally {
+                setIsUpdating(false);
+              }
+            },
+          },
+        ]
+      );
+    });
+  };
+
+
   return {
     user,
     isLoading,
@@ -73,5 +103,6 @@ export const useProfile = () => {
     refetch: fetchProfile,
     updateProfile,
     updateAvatar,
+    deleteAccount
   };
 };

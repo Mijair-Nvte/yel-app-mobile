@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { EventItem, eventService } from '@/services/events/event.service';
+import { Button } from '@/components/ui/button';
 
 interface EventRegisterModalProps {
   visible: boolean;
@@ -50,8 +51,8 @@ export const EventRegisterModal: React.FC<EventRegisterModalProps> = ({
         last_name: lastName || undefined,
         email: email,
         phone: phone || undefined,
-        source: 'App Móvil YEL',
-        utm_source: 'app_yel',
+        source: 'App Móvil Beliv',
+        utm_source: 'app_beliv',
         utm_medium: 'mobile_app',
         utm_campaign: 'home_events_carousel'
       };
@@ -73,51 +74,56 @@ export const EventRegisterModal: React.FC<EventRegisterModalProps> = ({
 
   return (
     <Modal animationType="slide" transparent={true} visible={visible} onRequestClose={onClose}>
-      <View className="flex-1 justify-end bg-black/60">
-        <View className="bg-white rounded-t-[36px] p-6 pb-10 shadow-2xl">
+      {/* Fondo oscuro translúcido */}
+      <View className="flex-1 justify-end bg-carbon/50">
+        {/* Contenedor principal con fondo Blanco y esquinas redondeadas */}
+        <View className="bg-blanco rounded-t-[36px] p-6 pb-12 shadow-2xl">
+          
+          {/* Header del Modal */}
           <View className="flex-row justify-between items-center mb-4">
             <View className="flex-1 mr-2">
-              <Text className="text-gray-400 text-[10px] font-black uppercase tracking-wider">Registro Rápido</Text>
-              <Text className="text-gray-900 text-xl font-black" numberOfLines={1}>{event?.title}</Text>
+              <Text className="text-carbon/50 text-[10px] font-extrabold uppercase tracking-widest">Registro Rápido</Text>
+              <Text className="text-carbon text-xl font-extrabold tracking-tight" numberOfLines={1}>{event?.title}</Text>
             </View>
-            <TouchableOpacity onPress={onClose} className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center">
-              <Ionicons name="close" size={20} color="#111" />
+            <TouchableOpacity onPress={onClose} className="w-10 h-10 rounded-full bg-tiza items-center justify-center">
+              <Ionicons name="close" size={20} color="#141716" />
             </TouchableOpacity>
           </View>
 
-          <Text className="text-gray-500 text-xs mb-6">
+          <Text className="text-carbon/70 text-xs mb-6 leading-relaxed">
             Confirma tus datos para asegurar tu lugar y recibir el enlace de acceso directo al evento.
           </Text>
 
+          {/* Formulario de Inputs */}
           <View className="space-y-3 mb-6">
             <View>
-              <Text className="text-gray-700 text-xs font-bold mb-1">Nombre *</Text>
+              <Text className="text-carbon text-xs font-bold mb-1">Nombre *</Text>
               <TextInput 
-                className="bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-gray-900 text-sm"
+                className="bg-tiza border border-carbon/10 rounded-2xl px-4 py-3.5 text-carbon text-sm font-medium"
                 placeholder="Tu nombre"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor="rgba(20,23,22,0.4)"
                 value={firstName}
                 onChangeText={setFirstName}
               />
             </View>
 
             <View className="mt-3">
-              <Text className="text-gray-700 text-xs font-bold mb-1">Apellido (Opcional)</Text>
+              <Text className="text-carbon text-xs font-bold mb-1">Apellido (Opcional)</Text>
               <TextInput 
-                className="bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-gray-900 text-sm"
+                className="bg-tiza border border-carbon/10 rounded-2xl px-4 py-3.5 text-carbon text-sm font-medium"
                 placeholder="Tu apellido"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor="rgba(20,23,22,0.4)"
                 value={lastName}
                 onChangeText={setLastName}
               />
             </View>
 
             <View className="mt-3">
-              <Text className="text-gray-700 text-xs font-bold mb-1">Correo Electrónico *</Text>
+              <Text className="text-carbon text-xs font-bold mb-1">Correo Electrónico *</Text>
               <TextInput 
-                className="bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-gray-900 text-sm"
+                className="bg-tiza border border-carbon/10 rounded-2xl px-4 py-3.5 text-carbon text-sm font-medium"
                 placeholder="tucorreo@ejemplo.com"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor="rgba(20,23,22,0.4)"
                 autoCapitalize="none"
                 keyboardType="email-address"
                 value={email}
@@ -126,11 +132,11 @@ export const EventRegisterModal: React.FC<EventRegisterModalProps> = ({
             </View>
 
             <View className="mt-3">
-              <Text className="text-gray-700 text-xs font-bold mb-1">Teléfono (Opcional)</Text>
+              <Text className="text-carbon text-xs font-bold mb-1">Teléfono (Opcional)</Text>
               <TextInput 
-                className="bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-gray-900 text-sm"
+                className="bg-tiza border border-carbon/10 rounded-2xl px-4 py-3.5 text-carbon text-sm font-medium"
                 placeholder="Tu número de teléfono"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor="rgba(20,23,22,0.4)"
                 keyboardType="phone-pad"
                 value={phone}
                 onChangeText={setPhone}
@@ -138,20 +144,13 @@ export const EventRegisterModal: React.FC<EventRegisterModalProps> = ({
             </View>
           </View>
 
-          <TouchableOpacity 
+          {/* Botón utilizando tu componente global con colores Carbón / Salvia */}
+          <Button
+            title="Completar Registro"
             onPress={handleSubmit}
+            isLoading={isRegistering}
             disabled={isRegistering}
-            className="bg-[#E24A85] py-4 rounded-2xl items-center flex-row justify-center shadow-md"
-          >
-            {isRegistering ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <>
-                <Text className="text-white font-bold text-base mr-2">Completar Registro</Text>
-                <Ionicons name="checkmark-circle-outline" size={20} color="white" />
-              </>
-            )}
-          </TouchableOpacity>
+          />
         </View>
       </View>
     </Modal>

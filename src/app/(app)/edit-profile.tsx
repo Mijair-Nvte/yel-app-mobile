@@ -1,11 +1,10 @@
-// src/app/(app)/edit-profile.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Image, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useProfile } from '@/hooks/profile/useProfile';
 import * as ImagePicker from 'expo-image-picker';
+import { useProfile } from '@/hooks/profile/useProfile';
+import { ScreenWrapper } from '@/components/common/ScreenWrapper';
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -64,83 +63,134 @@ export default function EditProfileScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-[#0B0B0F] justify-center items-center">
-        <ActivityIndicator size="large" color="#E24A85" />
-      </SafeAreaView>
+      <ScreenWrapper  statusBarStyle="dark">
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#E24A85" />
+        </View>
+      </ScreenWrapper>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0B0B0F]">
-      <View className="flex-row items-center px-5 py-3 border-b border-white/10">
-        <TouchableOpacity onPress={() => router.back()} className="w-10 h-10 rounded-full items-center justify-center bg-white/10 border border-white/10">
-          <Ionicons name="chevron-back" size={20} color="white" />
+    <ScreenWrapper statusBarStyle="dark" >
+
+      {/* Header */}
+      <View className="flex-row items-center px-5 py-4 ">
+        <TouchableOpacity 
+          onPress={() => router.back()} 
+          className="w-10 h-10 rounded-full items-center justify-center bg-gray-100 border border-black/5"
+        >
+          <Ionicons name="chevron-back" size={20} color="#1A0811" />
         </TouchableOpacity>
-        <Text className="text-white font-bold text-base flex-1 text-center mr-10">Edit Profile</Text>
+        <Text className="text-[#1A0811] font-bold text-lg flex-1 text-center mr-10">Edit Profile</Text>
       </View>
 
-      <ScrollView className="px-6 pt-6 pb-10" showsVerticalScrollIndicator={false}>
-        
+      <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+
         {/* Cambio de Avatar */}
-        <View className="items-center mb-6">
-          <TouchableOpacity onPress={handlePickImage} className="relative">
+        <View className="items-center mb-8">
+          <TouchableOpacity onPress={handlePickImage} className="relative active:scale-95 transition-transform shadow-sm">
             {user?.profile?.avatar_url ? (
-              <Image source={{ uri: user.profile.avatar_url }} className="w-24 h-24 rounded-full border-2 border-[#E24A85]" />
+              <Image 
+                source={{ uri: user.profile.avatar_url }} 
+                className="w-28 h-28 rounded-full border-4 border-white bg-gray-200" 
+              />
             ) : (
-              <View className="w-24 h-24 rounded-full bg-[#E24A85]/20 items-center justify-center border-2 border-[#E24A85]">
-                <Ionicons name="person" size={40} color="#E24A85" />
+              <View className="w-28 h-28 rounded-full bg-[#E24A85]/10 items-center justify-center border-4 border-white">
+                <Ionicons name="person" size={48} color="#E24A85" />
               </View>
             )}
-            <View className="absolute bottom-0 right-0 bg-[#E24A85] w-8 h-8 rounded-full items-center justify-center border-2 border-[#0B0B0F]">
-              <Ionicons name="camera" size={14} color="white" />
+            <View className="absolute bottom-0 right-0 bg-[#E24A85] w-9 h-9 rounded-full items-center justify-center border-4 border-white shadow-sm">
+              <Ionicons name="camera" size={16} color="white" />
             </View>
           </TouchableOpacity>
-          <Text className="text-white/50 text-xs mt-2">Tap to change avatar</Text>
+          <Text className="text-gray-500 text-xs mt-3 font-medium">Tap to change photo</Text>
         </View>
 
         {/* Formulario */}
-        <View className="space-y-4 mb-8">
+        <View className="mb-8">
           <View>
-            <Text className="text-white/70 text-xs mb-1 font-medium">First Name</Text>
-            <TextInput value={firstName} onChangeText={setFirstName} placeholder="First Name" placeholderTextColor="rgba(255,255,255,0.3)" className="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-base" />
+            <Text className="text-[#1A0811]/70 text-xs mb-1.5 font-bold ml-1 uppercase tracking-wider">First Name</Text>
+            <TextInput 
+              value={firstName} 
+              onChangeText={setFirstName} 
+              placeholder="Enter your first name" 
+              placeholderTextColor="#9CA3AF" 
+              className="bg-white border border-gray-200 rounded-2xl px-4 py-3.5 text-[#1A0811] text-base font-medium shadow-sm" 
+            />
           </View>
 
-          <View className="mt-4">
-            <Text className="text-white/70 text-xs mb-1 font-medium">Last Name</Text>
-            <TextInput value={lastName} onChangeText={setLastName} placeholder="Last Name" placeholderTextColor="rgba(255,255,255,0.3)" className="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-base" />
+          <View className="mt-5">
+            <Text className="text-[#1A0811]/70 text-xs mb-1.5 font-bold ml-1 uppercase tracking-wider">Last Name</Text>
+            <TextInput 
+              value={lastName} 
+              onChangeText={setLastName} 
+              placeholder="Enter your last name" 
+              placeholderTextColor="#9CA3AF" 
+              className="bg-white border border-gray-200 rounded-2xl px-4 py-3.5 text-[#1A0811] text-base font-medium shadow-sm" 
+            />
           </View>
 
-          <View className="mt-4">
-            <Text className="text-white/70 text-xs mb-1 font-medium">Phone Number</Text>
-            <TextInput value={phone} onChangeText={setPhone} placeholder="Phone" placeholderTextColor="rgba(255,255,255,0.3)" keyboardType="phone-pad" className="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-base" />
+          <View className="mt-5">
+            <Text className="text-[#1A0811]/70 text-xs mb-1.5 font-bold ml-1 uppercase tracking-wider">Phone Number</Text>
+            <TextInput 
+              value={phone} 
+              onChangeText={setPhone} 
+              placeholder="+1 (555) 000-0000" 
+              placeholderTextColor="#9CA3AF" 
+              keyboardType="phone-pad" 
+              className="bg-white border border-gray-200 rounded-2xl px-4 py-3.5 text-[#1A0811] text-base font-medium shadow-sm" 
+            />
           </View>
 
-          <View className="mt-4">
-            <Text className="text-white/70 text-xs mb-1 font-medium">Country</Text>
-            <TextInput value={country} onChangeText={setCountry} placeholder="Country" placeholderTextColor="rgba(255,255,255,0.3)" className="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-base" />
+          <View className="mt-5">
+            <Text className="text-[#1A0811]/70 text-xs mb-1.5 font-bold ml-1 uppercase tracking-wider">Country</Text>
+            <TextInput 
+              value={country} 
+              onChangeText={setCountry} 
+              placeholder="e.g. Mexico" 
+              placeholderTextColor="#9CA3AF" 
+              className="bg-white border border-gray-200 rounded-2xl px-4 py-3.5 text-[#1A0811] text-base font-medium shadow-sm" 
+            />
           </View>
 
-          <View className="mt-4">
-            <Text className="text-white/70 text-xs mb-1 font-medium">State</Text>
-            <TextInput value={state} onChangeText={setState} placeholder="State" placeholderTextColor="rgba(255,255,255,0.3)" className="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-base" />
+          <View className="mt-5">
+            <Text className="text-[#1A0811]/70 text-xs mb-1.5 font-bold ml-1 uppercase tracking-wider">State</Text>
+            <TextInput 
+              value={state} 
+              onChangeText={setState} 
+              placeholder="e.g. Jalisco" 
+              placeholderTextColor="#9CA3AF" 
+              className="bg-white border border-gray-200 rounded-2xl px-4 py-3.5 text-[#1A0811] text-base font-medium shadow-sm" 
+            />
           </View>
 
-          <View className="mt-4">
-            <Text className="text-white/70 text-xs mb-1 font-medium">City</Text>
-            <TextInput value={city} onChangeText={setCity} placeholder="City" placeholderTextColor="rgba(255,255,255,0.3)" className="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-base" />
+          <View className="mt-5">
+            <Text className="text-[#1A0811]/70 text-xs mb-1.5 font-bold ml-1 uppercase tracking-wider">City</Text>
+            <TextInput 
+              value={city} 
+              onChangeText={setCity} 
+              placeholder="e.g. Guadalajara" 
+              placeholderTextColor="#9CA3AF" 
+              className="bg-white border border-gray-200 rounded-2xl px-4 py-3.5 text-[#1A0811] text-base font-medium shadow-sm" 
+            />
           </View>
         </View>
 
         {/* Botón Guardar */}
-        <TouchableOpacity 
-          onPress={handleSave} 
+        <TouchableOpacity
+          onPress={handleSave}
           disabled={isUpdating}
-          className={`py-4 rounded-2xl items-center shadow-lg bg-[#E24A85] ${isUpdating ? 'opacity-50' : ''}`}
+          className={`py-4 rounded-2xl items-center shadow-md bg-[#E24A85] ${isUpdating ? 'opacity-70' : 'active:scale-[0.98] transition-transform'}`}
         >
-          {isUpdating ? <ActivityIndicator color="white" /> : <Text className="text-white font-bold text-base">Save Changes</Text>}
+          {isUpdating ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text className="text-white font-bold text-base">Guardar</Text>
+          )}
         </TouchableOpacity>
 
       </ScrollView>
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 }

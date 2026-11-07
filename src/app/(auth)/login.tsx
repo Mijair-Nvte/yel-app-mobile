@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/logo';
 import { useLogin } from '@/hooks/auth/useLogin';
-import { authService } from '@/services/auth.service'; // Para reenviar código si es necesario
+import { authService } from '@/services/auth.service';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -40,7 +39,7 @@ export default function LoginScreen() {
           { text: 'Cancelar', style: 'cancel' },
           {
             text: 'Enviar Código',
-            onPress: async () => { // 👈 Corregido aquí (onPress en lugar de press)
+            onPress: async () => { 
               try {
                 const res = await authService.requestVerification(email);
                 router.push({
@@ -56,54 +55,70 @@ export default function LoginScreen() {
       );
     }
   };
+
   return (
-    <SafeAreaView className="flex-1 bg-[#0B0B0F]">
+    <SafeAreaView className="flex-1 bg-tiza">
       <View className="flex-row items-center px-5 py-3">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="w-11 h-11 rounded-full items-center justify-center bg-white/10 border border-white/10"
+          className="w-11 h-11 rounded-full items-center justify-center bg-blanco"
         >
-          <Ionicons name="chevron-back" size={22} color="white" />
+          <Ionicons name="chevron-back" size={22} color="#141716" />
         </TouchableOpacity>
-        <Text className="text-white font-bold text-lg flex-1 text-center mr-11">Log In</Text>
+        <Text className="text-carbon font-bold text-lg flex-1 text-center mr-11">Log In</Text>
       </View>
 
       <View className="px-6 mt-6 flex-1">
         <Logo />
 
-        {error && <Text className="text-red-500 text-sm mb-4 text-center">{error}</Text>}
+        <View className="bg-blanco rounded-[32px] p-6 shadow-sm shadow-carbon/10">
+          {error && (
+            <View className="bg-red-500/10 border border-red-500/20 p-3 rounded-2xl mb-4">
+              <Text className="text-red-600 text-sm text-center font-medium">{error}</Text>
+            </View>
+          )}
 
-        <Input
-          placeholder="Email"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          value={email}
-          onChangeText={setEmail}
-        />
+          <Input
+            placeholder="Email"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
+          />
 
-        <Input
-          placeholder="Password"
-          isPassword
-          value={password}
-          onChangeText={setPassword}
-        />
+          <Input
+            placeholder="Password"
+            isPassword
+            value={password}
+            onChangeText={setPassword}
+          />
 
-        <TouchableOpacity className="mb-8 mt-2 items-end">
-          <Text className="text-white/60 text-sm">¿Olvidaste tu contraseña?</Text>
-        </TouchableOpacity>
-
-        <Button
-          title={isLoading ? "Cargando..." : "Log In"}
-          variant={isLoading ? 'disabled' : 'primary'}
-          onPress={handleLogin}
-          disabled={isLoading}
-        />
-
-        <View className="flex-row justify-center mt-auto mb-8">
-          <Text className="text-white/50 text-base">¿No tienes cuenta? </Text>
-          <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
-            <Text className="text-[#E24A85] font-bold text-base">Sign Up</Text>
+          <TouchableOpacity
+            onPress={() => router.push('/(auth)/forgot-password')}
+            className="mb-6 mt-1 items-end"
+          >
+            <Text className="text-carbon/60 font-medium text-sm">¿Olvidaste tu contraseña?</Text>
           </TouchableOpacity>
+
+                  <Button
+            title={isLoading ? "Cargando..." : "Log In"}
+            variant="primary"
+            isLoading={isLoading}
+            onPress={handleLogin}
+            disabled={isLoading}
+          />
+
+          <View className="flex-row justify-center mt-6">
+            <Text className="text-carbon/60 font-medium text-sm">¿No tienes cuenta? </Text>
+            <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
+              <Text
+                className="text-carbon font-bold text-sm"
+                style={{ textDecorationLine: 'underline', textDecorationColor: '#A6AE93' }}
+              >
+                Sign Up
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </SafeAreaView>

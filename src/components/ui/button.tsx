@@ -1,3 +1,4 @@
+// src/components/ui/button.tsx
 import React from 'react';
 import { TouchableOpacity, Text, TouchableOpacityProps, ActivityIndicator } from 'react-native';
 
@@ -8,47 +9,41 @@ interface ButtonProps extends TouchableOpacityProps {
 }
 
 export function Button({ title, variant = 'primary', isLoading, className, style, ...props }: ButtonProps) {
+  // Solo "cargando" se pone en salvia
   const getVariantStyles = () => {
+    if (isLoading) return 'bg-salvia';
     switch (variant) {
-      case 'secondary': return 'bg-white';
-      case 'disabled': return 'bg-white/10';
-      case 'primary': default: return 'bg-[#E24A85]';
+      case 'secondary': return 'bg-blanco';
+      case 'disabled':
+      case 'primary': default: return 'bg-carbon shadow-lg shadow-carbon/20';
     }
   };
 
   const getVariantTextStyles = () => {
+    if (isLoading) return 'text-carbon font-semibold';
     switch (variant) {
-      case 'secondary': return 'text-[#E24A85]';
-      case 'disabled': return 'text-white/40';
-      case 'primary': default: return 'text-white';
+      case 'secondary': return 'text-carbon font-semibold';
+      case 'disabled':
+      case 'primary': default: return 'text-blanco font-semibold';
     }
   };
 
-  // Brillo rosa solo en el botón principal activo
-  const glow =
-    variant === 'primary'
-      ? {
-          shadowColor: '#E24A85',
-          shadowOpacity: 0.45,
-          shadowRadius: 18,
-          shadowOffset: { width: 0, height: 8 },
-          elevation: 8,
-        }
+  // Borde salvia sutil solo para el botón secundario (blanco)
+  const secondaryBorder =
+    variant === 'secondary' && !isLoading
+      ? { borderWidth: 1, borderColor: 'rgba(166,174,147,0.35)' }
       : undefined;
 
   return (
     <TouchableOpacity
-      activeOpacity={0.85}
-      className={`h-14 rounded-2xl items-center justify-center flex-row ${getVariantStyles()} ${className || ''}`}
-      style={[glow, style]}
+      activeOpacity={0.88}
+      className={`h-14 rounded-full items-center justify-center flex-row ${getVariantStyles()} ${className || ''}`}
+      style={[secondaryBorder, style]}
       disabled={variant === 'disabled' || isLoading}
       {...props}
     >
-      {isLoading ? (
-        <ActivityIndicator color={variant === 'secondary' ? '#E24A85' : '#ffffff'} />
-      ) : (
-        <Text className={`font-bold text-base tracking-wide ${getVariantTextStyles()}`}>{title}</Text>
-      )}
+      {isLoading && <ActivityIndicator color="#141716" />}
+      <Text className={`text-base ${getVariantTextStyles()} ${isLoading ? 'ml-3' : ''}`}>{title}</Text>
     </TouchableOpacity>
   );
 }

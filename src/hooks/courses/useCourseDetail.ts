@@ -1,44 +1,53 @@
 import { useState, useEffect, useCallback } from 'react';
 import { courseService, CourseDetail } from '@/services/courses/course.service';
-import { Alert } from 'react-native';
+import { router } from 'expo-router'; // 👈 Importamos el router
 
-export const useCourseDetail = (companyUid: string, courseUid: string) => {
+// 👇 Quitamos initialIsEnrolled y courseUid, ya no los necesitamos aquí
+export const useCourseDetail = (companyUid: string, slug: string) => {
   const [course, setCourse] = useState<CourseDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchDetail = useCallback(async () => {
-    if (!companyUid || !courseUid) return;
+  const fetchCourse = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await courseService.getCourseDetail(companyUid, courseUid);
+      
+      const response = await courseService.getCourseDetail(companyUid, slug);
       setCourse(response.data);
+      
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error loading course detail.');
+      setError(err.response?.data?.message || 'Error loading course details');
     } finally {
       setIsLoading(false);
     }
-  }, [companyUid, courseUid]);
+  }, [companyUid, slug]);
+
+  useEffect(() => {
+    if (companyUid && slug) {
+      fetchCourse();
+    }
+  }, [fetchCourse]);
 
   const enroll = async () => {
+    if (!course) return;
+    
     try {
       setIsEnrolling(true);
-      await courseService.enrollCourse(companyUid, courseUid);
-      // Refrescamos los datos para que is_enrolled cambie a true y se desbloqueen los videos
-      await fetchDetail(); 
-      Alert.alert('Success!', 'You are now enrolled in this course.');
+      await courseService.enrollCourse(companyUid, course.uid);
+      
+      router.replace({
+        pathname: '/(app)/course-player',
+        params: { courseUid: course.uid }
+      });
+      
     } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.message || 'Could not enroll in course.');
+      alert(err.response?.data?.message || 'Error al inscribirse');
     } finally {
       setIsEnrolling(false);
     }
   };
 
-  useEffect(() => {
-    fetchDetail();
-  }, [fetchDetail]);
-
-  return { course, isLoading, isEnrolling, error, enroll, refetch: fetchDetail };
+  return { course, isLoading, isEnrolling, error, enroll, refetch: fetchCourse };
 };

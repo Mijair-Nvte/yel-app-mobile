@@ -1,13 +1,19 @@
+/* src/global.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --font-display:
-    Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji,
-    Segoe UI Symbol, Noto Color Emoji;
-  --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+  /* Tipografías existentes */
+  --font-display: Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
   --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
   --font-serif: Georgia, 'Times New Roman', serif;
+
+  /* Nueva Paleta de Colores Beliv */
+  --color-blanco: #FFFFFF;
+  --color-carbon: #141715;
+  --color-tiza: #EEF0ED;
+  --color-salvia: #A6AE93;
+  --color-arena: #C8B69D;
 }

@@ -1,40 +1,81 @@
 // src/app/(app)/lesson-detail.tsx
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Video, ResizeMode } from 'expo-av';
+import { useVideoPlayer, VideoView } from 'expo-video';
+import * as Linking from 'expo-linking';
+import { api } from '@/services/api';
 
 export default function LessonDetailScreen() {
   const router = useRouter();
-  
-  // Recibimos los parámetros básicos que mandamos desde el temario
-  const { videoUrl, title, lessonUid } = useLocalSearchParams<{ videoUrl: string, title: string, lessonUid: string }>();
-  
-  // Estado para manejar las futuras pestañas (Overview, Resources, Comments)
-  const [activeTab, setActiveTab] = useState<'overview' | 'resources' | 'comments'>('overview');
+  const companyUid = process.env.EXPO_PUBLIC_COMPANY_UID as string;
+
+  // Recibimos los nuevos parámetros, incluyendo el curso y el estado de progreso
+  const { videoUrl, title, lessonUid, courseUid, isCompletedParam, resourcesParam } = useLocalSearchParams<{
+    videoUrl: string;
+    title: string;
+    lessonUid: string;
+    courseUid: string;
+    isCompletedParam: string;
+    resourcesParam: string;
+  }>();
+
+  // Parseamos los recursos y el estado inicial
+  const initialIsCompleted = isCompletedParam === 'true';
+  const resources = resourcesParam ? JSON.parse(resourcesParam) : [];
+
+  const [isCompleted, setIsCompleted] = useState(initialIsCompleted);
+  const [isToggling, setIsToggling] = useState(false);
+
+  // Reproductor: se limpia solo al desmontar la pantalla
+  const player = useVideoPlayer(videoUrl || null, (player) => {
+    player.loop = false;
+    player.play(); // Auto-play al entrar
+  });
+
+  // Consumir API para marcar/desmarcar lección
+  const toggleCompletion = async () => {
+    if (!courseUid || !lessonUid) return;
+    try {
+      setIsToggling(true);
+      const response = await api.post(
+        `/academy/companies/${companyUid}/my-courses/${courseUid}/lessons/${lessonUid}/toggle-completion`
+      );
+      // El backend devuelve 'is_completed' dentro de data.data
+      setIsCompleted(response.data.data.is_completed);
+    } catch (error) {
+      alert('Error al actualizar el progreso de la lección.');
+    } finally {
+      setIsToggling(false);
+    }
+  };
+
+  const formatFileSize = (bytes?: number) => {
+    if (!bytes) return 'Enlace externo';
+    const mb = bytes / (1024 * 1024);
+    return `${mb.toFixed(2)} MB`;
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-[#0B0B0F]" edges={['top']}>
-      
-      {/* 🎬 Header & Reproductor Principal (Fijo en la parte superior) */}
+      {/* 🎬 Header & Reproductor Principal */}
       <View className="w-full bg-black">
-        {/* Botón flotante para regresar (se superpone al video o se pone arriba) */}
-        <TouchableOpacity 
-          onPress={() => router.back()} 
+        <TouchableOpacity
+          onPress={() => router.back()}
           className="absolute top-4 left-4 z-10 w-10 h-10 rounded-full bg-black/50 items-center justify-center border border-white/20"
         >
           <Ionicons name="close" size={24} color="white" />
         </TouchableOpacity>
 
         {videoUrl ? (
-          <Video
-            source={{ uri: videoUrl }}
+          <VideoView
+            player={player}
             style={{ width: '100%', height: 250 }}
-            useNativeControls
-            resizeMode={ResizeMode.CONTAIN}
-            shouldPlay // Auto-play al entrar
+            nativeControls
+            contentFit="contain"
+            fullscreenOptions={{ enable: true }}
           />
         ) : (
           <View style={{ width: '100%', height: 250 }} className="items-center justify-center bg-[#161622]">
@@ -44,61 +85,72 @@ export default function LessonDetailScreen() {
         )}
       </View>
 
-      {/* 📚 Área de Contenido de la Lección */}
+      {/* 📚 Área de Contenido */}
       <View className="flex-1 bg-[#0B0B0F]">
-        <View className="p-5 border-b border-white/10">
-          <Text className="text-white text-xl font-bold">{title}</Text>
+        {/* Título y Botón de Completar */}
+        <View className="p-5 border-b border-white/10 flex-row items-center justify-between">
+          <Text className="text-white text-lg font-bold flex-1 mr-4">{title}</Text>
+          
+          <TouchableOpacity
+            onPress={toggleCompletion}
+            disabled={isToggling}
+            className={`px-4 py-2 rounded-full flex-row items-center ${
+              isCompleted ? 'bg-green-500/20 border border-green-500/50' : 'bg-white/10 border border-white/10'
+            }`}
+          >
+            {isToggling ? (
+              <ActivityIndicator size="small" color={isCompleted ? '#22c55e' : 'white'} />
+            ) : (
+              <>
+                <Ionicons 
+                  name={isCompleted ? "checkmark-circle" : "ellipse-outline"} 
+                  size={18} 
+                  color={isCompleted ? "#22c55e" : "white"} 
+                />
+                <Text className={`ml-2 font-bold text-sm ${isCompleted ? 'text-green-400' : 'text-white'}`}>
+                  {isCompleted ? 'Completada' : 'Marcar'}
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
         </View>
 
-        {/* Custom Tabs (Estilo Udemy) */}
-        <View className="flex-row border-b border-white/10 px-5">
-          <TouchableOpacity 
-            onPress={() => setActiveTab('overview')}
-            className={`py-4 mr-6 ${activeTab === 'overview' ? 'border-b-2 border-[#E24A85]' : ''}`}
-          >
-            <Text className={activeTab === 'overview' ? 'text-white font-bold' : 'text-white/50'}>Overview</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            onPress={() => setActiveTab('resources')}
-            className={`py-4 mr-6 ${activeTab === 'resources' ? 'border-b-2 border-[#E24A85]' : ''}`}
-          >
-            <Text className={activeTab === 'resources' ? 'text-white font-bold' : 'text-white/50'}>Resources</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            onPress={() => setActiveTab('comments')}
-            className={`py-4 ${activeTab === 'comments' ? 'border-b-2 border-[#E24A85]' : ''}`}
-          >
-            <Text className={activeTab === 'comments' ? 'text-white font-bold' : 'text-white/50'}>Comments</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Lista de Recursos (Única vista) */}
+        <ScrollView className="flex-1 px-5 pt-6" showsVerticalScrollIndicator={false}>
+          <Text className="text-white/50 font-bold uppercase tracking-widest text-xs mb-4">
+            Recursos de la lección
+          </Text>
 
-        {/* Contenido de las Pestañas */}
-        <ScrollView className="flex-1 px-5 pt-5">
-          {activeTab === 'overview' && (
-            <View>
-              <Text className="text-white/70 leading-relaxed text-base">
-                {/* Aquí en el futuro llamaremos a la API para traer la descripción de la lección */}
-                Welcome to this lesson. Make sure to watch the entire video and check the resources section for downloadable assets related to this topic.
-              </Text>
+          {resources.length > 0 ? (
+            resources.map((res: any) => (
+              <TouchableOpacity
+                key={res.uid}
+                onPress={() => res.public_url && Linking.openURL(res.public_url)}
+                className="flex-row items-center bg-[#161622] p-4 rounded-2xl mb-3 border border-white/10"
+              >
+                <View className="w-12 h-12 bg-[#E24A85]/10 rounded-full items-center justify-center mr-4">
+                  <Ionicons name="document-text" size={24} color="#E24A85" />
+                </View>
+                <View className="flex-1 mr-2">
+                  <Text className="text-white font-semibold text-base" numberOfLines={1}>
+                    {res.title || res.file_name}
+                  </Text>
+                  <Text className="text-white/40 text-xs mt-1">
+                    {formatFileSize(res.file_size)}
+                  </Text>
+                </View>
+                <Ionicons name="download-outline" size={22} color="rgba(255,255,255,0.5)" />
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View className="items-center justify-center py-12">
+              <Ionicons name="folder-open-outline" size={48} color="rgba(255,255,255,0.1)" />
+              <Text className="text-white/40 mt-4 text-center">No hay recursos adjuntos para esta lección.</Text>
             </View>
           )}
-
-          {activeTab === 'resources' && (
-            <View className="items-center justify-center py-10">
-              <Ionicons name="folder-open-outline" size={40} color="rgba(255,255,255,0.2)" />
-              <Text className="text-white/40 mt-3 text-center">No resources attached to this lesson yet.</Text>
-            </View>
-          )}
-
-          {activeTab === 'comments' && (
-            <View className="items-center justify-center py-10">
-              <Ionicons name="chatbubbles-outline" size={40} color="rgba(255,255,255,0.2)" />
-              <Text className="text-white/40 mt-3 text-center">Discussions will be available here soon.</Text>
-            </View>
-          )}
+          <View className="h-10" />
         </ScrollView>
       </View>
-      
     </SafeAreaView>
   );
 }

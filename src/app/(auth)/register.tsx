@@ -46,78 +46,87 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0B0B0F]">
+    <SafeAreaView className="flex-1 bg-tiza">
       <View className="flex-row items-center px-5 py-3">
         <TouchableOpacity
           onPress={() => router.back()}
           activeOpacity={0.7}
-          className="w-11 h-11 rounded-full items-center justify-center bg-white/10 border border-white/10"
+          className="w-11 h-11 rounded-full items-center justify-center bg-blanco"
         >
-          <Ionicons name="chevron-back" size={22} color="white" />
+          <Ionicons name="chevron-back" size={22} color="#141716" />
         </TouchableOpacity>
-        <Text className="text-white font-bold text-lg flex-1 text-center mr-11">Sign Up</Text>
+        <Text className="text-carbon font-bold text-lg flex-1 text-center mr-11">Sign Up</Text>
       </View>
 
       <View className="px-6 mt-6 flex-1">
         <Logo />
 
-        {error && (
-          <Text className="text-red-500 text-sm mb-4 text-center">{error}</Text>
-        )}
+        <View className="bg-blanco rounded-[32px] p-6 shadow-sm shadow-carbon/10">
+          {error && (
+            <View className="bg-red-500/10 border border-red-500/20 p-3 rounded-2xl mb-4">
+              <Text className="text-red-600 text-sm text-center font-medium">{error}</Text>
+            </View>
+          )}
 
-        <Input
-          placeholder="Name"
-          value={name}
-          onChangeText={setName}
-        />
-
-        <Input
-          placeholder="Email"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          value={email}
-          onChangeText={setEmail}
-        />
-
-        <Input
-          placeholder="Password"
-          isPassword
-          value={password}
-          onChangeText={setPassword}
-        />
-
-        <Input
-          placeholder="Confirm Password"
-          isPassword
-          value={passwordConfirmation}
-          onChangeText={setPasswordConfirmation}
-        />
-
-        <View className="flex-row items-center mb-7 mt-1 px-1">
-          <Switch
-            value={acceptTerms}
-            onValueChange={setAcceptTerms}
-            trackColor={{ false: 'rgba(255,255,255,0.15)', true: '#E24A85' }}
-            thumbColor={'#ffffff'}
+          <Input
+            placeholder="Name"
+            value={name}
+            onChangeText={setName}
           />
-          <Text className="text-white/60 ml-3 flex-1 text-sm">
-            By proceeding, you agree to receive emails.
-          </Text>
-        </View>
 
-        <Button
-          title={isLoading ? "Cargando..." : "Sign Up"}
-          variant={acceptTerms && !isLoading ? 'primary' : 'disabled'}
-          onPress={handleRegister}
-          disabled={!acceptTerms || isLoading}
-          className="mb-6"
-        />
+          <Input
+            placeholder="Email"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
+          />
 
-        <View className="flex-row justify-center mt-auto mb-8">
-          <Text className="text-white/50 text-base">Already have an account? </Text>
-          <TouchableOpacity onPress={() => router.push('/login')}>
-            <Text className="text-[#E24A85] font-bold text-base">Log In</Text>
-          </TouchableOpacity>
+          <Input
+            placeholder="Password"
+            isPassword
+            value={password}
+            onChangeText={setPassword}
+          />
+
+          <Input
+            placeholder="Confirm Password"
+            isPassword
+            value={passwordConfirmation}
+            onChangeText={setPasswordConfirmation}
+          />
+
+          <View className="flex-row items-center mb-6 mt-1 px-1">
+            <Switch
+              value={acceptTerms}
+              onValueChange={setAcceptTerms}
+              trackColor={{ false: 'rgba(20,23,22,0.12)', true: '#A6AE93' }}
+              thumbColor={'#ffffff'}
+            />
+            <Text className="text-carbon/60 ml-3 flex-1 text-sm font-medium">
+              By proceeding, you agree to receive emails.
+            </Text>
+          </View>
+
+                 <Button
+            title={isLoading ? "Cargando..." : "Sign Up"}
+            variant={acceptTerms ? 'primary' : 'disabled'}
+            isLoading={isLoading}
+            onPress={handleRegister}
+            disabled={!acceptTerms || isLoading}
+          />
+
+          <View className="flex-row justify-center mt-6">
+            <Text className="text-carbon/60 font-medium text-sm">Already have an account? </Text>
+            <TouchableOpacity onPress={() => router.push('/login')}>
+              <Text
+                className="text-carbon font-bold text-sm"
+                style={{ textDecorationLine: 'underline', textDecorationColor: '#A6AE93' }}
+              >
+                Log In
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </SafeAreaView>

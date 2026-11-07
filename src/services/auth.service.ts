@@ -24,6 +24,18 @@ export interface VerifyRegistrationPayload {
   otp: string;
 }
 
+
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface ResetPasswordPayload {
+  user_id: number;
+  otp: string;
+  password: string;
+  password_confirmation: string;
+}
+
 export const authService = {
 
   login: async (data: LoginPayload) => {
@@ -51,5 +63,16 @@ export const authService = {
     // Apunta a la ruta general que creamos en el backend
     const response = await api.post('/auth/verify-registration', data);
     return response.data;
+  },
+
+  forgotPassword: async (data: ForgotPasswordPayload) => {
+    const response = await api.post('/forgot-password', data);
+    return response.data;
+  },
+
+  resetPassword: async (data: ResetPasswordPayload) => {
+    const response = await api.post('/reset-password', data);
+    return response.data;
   }
+
 };
