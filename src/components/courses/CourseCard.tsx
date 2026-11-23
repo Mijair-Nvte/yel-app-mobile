@@ -26,55 +26,73 @@ export const CourseCard = ({
   price = 0,
   onPress,
 }: CourseCardProps) => {
+  const safeProgress = Math.min(Math.max(progress, 0), 100);
+
   return (
     <TouchableOpacity
       onPress={onPress}
-      className="bg-[#161622] border border-white/10 rounded-3xl overflow-hidden mb-5 shadow-lg"
-      activeOpacity={0.85}
+      activeOpacity={0.9}
+      className="mb-5 overflow-hidden rounded-3xl border border-niebla bg-blanco"
     >
-      {/* Portada del curso */}
-      {coverUrl && (
-        <Image 
-          source={{ uri: coverUrl }} 
-          className="w-full h-40 bg-white/5" 
-          resizeMode="cover"
-        />
-      )}
+      {/* Portada */}
+      <View className="h-44 bg-humo">
+        {coverUrl ? (
+          <Image source={{ uri: coverUrl }} className="h-full w-full" resizeMode="cover" />
+        ) : (
+          <View className="h-full w-full items-center justify-center">
+            <Ionicons name="book-outline" size={32} color="#8C8C8C" />
+          </View>
+        )}
 
-      {/* Reemplazado div por View */}
-      <View className="p-4">
-        <View className="flex-row justify-between items-start mb-2">
-          <View className="bg-white/10 px-3 py-1 rounded-full">
-            <Text className="text-[#E24A85] text-xs font-bold uppercase tracking-wider">{category}</Text>
-          </View>
-          <View className="bg-white/5 px-2.5 py-1 rounded-full border border-white/10">
-            <Text className="text-white/80 text-xs font-semibold">
-              {isFree ? 'Free' : `$${price}`}
-            </Text>
-          </View>
+        {/* Precio */}
+        <View
+          className={`absolute left-3 top-3 rounded-full px-3 py-1 ${isFree ? 'bg-blanco' : 'bg-negro'}`}
+        >
+          <Text
+            className={`text-[11px] font-extrabold uppercase tracking-wider ${
+              isFree ? 'text-negro' : 'text-blanco'
+            }`}
+          >
+            {isFree ? 'Gratis' : `$${price}`}
+          </Text>
         </View>
+      </View>
 
-        <Text className="text-white text-lg font-bold mb-1">{title}</Text>
-        
-        {description && (
-          <Text className="text-white/60 text-xs mb-3" numberOfLines={2}>
+      {/* Información */}
+      <View className="p-5">
+        <Text className="mb-1.5 text-[11px] font-bold uppercase tracking-widest text-gris">
+          {category}
+        </Text>
+
+        <Text className="mb-1.5 text-lg font-extrabold leading-tight tracking-tight text-negro" numberOfLines={2}>
+          {title}
+        </Text>
+
+        {description ? (
+          <Text className="mb-3 text-sm leading-relaxed text-gris" numberOfLines={2}>
             {description}
           </Text>
-        )}
-        
-        {duration && (
-          <Text className="text-white/40 text-xs mb-3">⏱️ {duration}</Text>
-        )}
+        ) : null}
 
-        {/* Barra de Progreso (Si ya está inscrito / tiene avance) */}
-        {progress > 0 && (
-          <View className="mt-2 pt-3 border-t border-white/5">
-            <View className="flex-row justify-between mb-1">
-              <Text className="text-white/60 text-xs">Progress</Text>
-              <Text className="text-[#E24A85] text-xs font-bold">{progress}%</Text>
+        {duration ? (
+          <View className="flex-row items-center">
+            <Ionicons name="layers-outline" size={14} color="#3A3A3A" />
+            <Text className="ml-1.5 text-xs font-semibold text-grafito">{duration}</Text>
+          </View>
+        ) : null}
+
+        {/* Progreso */}
+        {safeProgress > 0 && (
+          <View className="mt-4 border-t border-niebla pt-4">
+            <View className="mb-2 flex-row justify-between">
+              <Text className="text-xs font-semibold text-gris">Tu progreso</Text>
+              <Text className="text-xs font-bold text-negro">{Math.round(safeProgress)}%</Text>
             </View>
-            <View className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
-              <View className="bg-[#E24A85] h-full rounded-full" style={{ width: `${progress}%` }} />
+            <View className="h-1.5 w-full overflow-hidden rounded-full bg-niebla">
+              <View
+                className="h-full rounded-full bg-negro"
+                style={{ width: `${safeProgress}%` as const }}
+              />
             </View>
           </View>
         )}

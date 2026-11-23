@@ -1,35 +1,34 @@
 // src/app/(app)/course-detail.tsx
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useVideoPlayer, VideoView } from 'expo-video'; // 👈 Nuevo import
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { useCourseDetail } from '@/hooks/courses/useCourseDetail';
 import { ScreenWrapper } from '@/components/common/ScreenWrapper';
+import { Button } from '@/components/ui/button';
 
 export default function CourseDetailScreen() {
   const router = useRouter();
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const companyUid = process.env.EXPO_PUBLIC_COMPANY_UID as string;
 
-
   const { course, isLoading, isEnrolling, error, enroll } = useCourseDetail(companyUid, slug);
 
   const player = useVideoPlayer(course?.preview_url || null, (player) => {
     player.loop = false;
-    player.pause(); // Opcional: define el estado inicial
+    player.pause();
   });
 
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    return `${mins} mins`;
-  };
+  const formatDuration = (seconds: number) => `${Math.floor(seconds / 60)} min`;
+
+  const totalLessons = course?.modules.reduce((acc, mod) => acc + mod.lessons.length, 0) ?? 0;
 
   if (isLoading) {
     return (
-      <ScreenWrapper statusBarStyle="dark">
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#E24A85" />
+      <ScreenWrapper statusBarStyle="dark" backgroundColor="#FFFFFF">
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#000000" />
         </View>
       </ScreenWrapper>
     );
@@ -37,14 +36,19 @@ export default function CourseDetailScreen() {
 
   if (error || !course) {
     return (
-      <ScreenWrapper statusBarStyle="dark">
-        <View className="flex-1 justify-center items-center px-6">
-          <Text className="text-red-500 text-center mb-4">{error || 'Course not found'}</Text>
+      <ScreenWrapper statusBarStyle="dark" backgroundColor="#FFFFFF">
+        <View className="flex-1 items-center justify-center px-6">
+          <View className="mb-4 h-14 w-14 items-center justify-center rounded-full bg-humo">
+            <Ionicons name="alert-circle-outline" size={26} color="#000000" />
+          </View>
+          <Text className="mb-6 text-center text-base font-medium text-gris">
+            {error || 'No encontramos este curso.'}
+          </Text>
           <TouchableOpacity
             onPress={() => router.back()}
-            className="bg-white border border-black/5 px-6 py-2 rounded-full"
+            className="h-11 items-center justify-center rounded-full bg-negro px-6"
           >
-            <Text className="text-[#1A0811]">Go Back</Text>
+            <Text className="text-sm font-bold text-blanco">Regresar</Text>
           </TouchableOpacity>
         </View>
       </ScreenWrapper>
@@ -52,28 +56,26 @@ export default function CourseDetailScreen() {
   }
 
   return (
-    <ScreenWrapper statusBarStyle="dark">
+    <ScreenWrapper statusBarStyle="dark" backgroundColor="#FFFFFF">
       {/* Header */}
-      <View className="flex-row items-center px-5 py-3 border-b border-black/5">
+      <View className="flex-row items-center px-5 py-3">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="w-10 h-10 rounded-full items-center justify-center bg-white border border-black/5"
+          accessibilityLabel="Regresar"
+          className="h-11 w-11 items-center justify-center rounded-full bg-humo active:opacity-70"
         >
-          <Ionicons name="chevron-back" size={20} color="#1A0811" />
+          <Ionicons name="chevron-back" size={22} color="#000000" />
         </TouchableOpacity>
-        <Text className="text-[#1A0811] font-bold text-base flex-1 text-center mr-10">
-          Course Details
-        </Text>
+        <Text className="mr-11 flex-1 text-center text-base font-bold text-negro">Detalle del curso</Text>
       </View>
 
       <ScrollView
-        className="px-6 pt-4"
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 8, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* 🎬 Reproductor de Preview (Tráiler) o Imagen de respaldo */}
+        {/* Video / portada */}
         {course.preview_url ? (
-          <View className="w-full h-48 rounded-3xl overflow-hidden border border-black/5 mb-6 bg-black">
+          <View className="mb-6 h-52 w-full overflow-hidden rounded-3xl bg-negro">
             <VideoView
               player={player}
               style={{ flex: 1 }}
@@ -85,65 +87,82 @@ export default function CourseDetailScreen() {
         ) : course.cover_url ? (
           <Image
             source={{ uri: course.cover_url }}
-            className="w-full h-48 rounded-3xl border border-black/5 mb-6 bg-white"
+            className="mb-6 h-52 w-full rounded-3xl bg-humo"
             resizeMode="cover"
           />
         ) : (
-          <View className="w-full h-48 bg-white rounded-3xl border border-black/5 items-center justify-center mb-6 overflow-hidden">
-            <Ionicons name="image-outline" size={60} color="rgba(26,8,17,0.2)" />
+          <View className="mb-6 h-52 w-full items-center justify-center rounded-3xl bg-humo">
+            <Ionicons name="image-outline" size={48} color="#8C8C8C" />
           </View>
         )}
 
-        <View className="mb-6">
-          <View className="flex-row items-center justify-between mb-2">
-            <View className="bg-[#E24A85]/15 px-3 py-1 rounded-full">
-              <Text className="text-[#E24A85] text-xs font-bold uppercase">
-                {course.is_free ? 'Free Course' : `$${course.price}`}
-              </Text>
-            </View>
+        {/* Información */}
+        <View className="mb-3 flex-row items-center">
+          <View className={`rounded-full px-3 py-1 ${course.is_free ? 'bg-humo' : 'bg-negro'}`}>
+            <Text
+              className={`text-[11px] font-extrabold uppercase tracking-wider ${
+                course.is_free ? 'text-negro' : 'text-blanco'
+              }`}
+            >
+              {course.is_free ? 'Gratis' : `$${course.price}`}
+            </Text>
           </View>
-          <Text className="text-[#1A0811] text-2xl font-bold mb-2">{course.title}</Text>
-          <Text className="text-[#1A0811]/60 text-sm leading-relaxed">{course.description}</Text>
+          <Text className="ml-3 text-xs font-semibold text-gris">
+            {course.modules.length} módulos · {totalLessons} lecciones
+          </Text>
         </View>
 
-        {!course.is_enrolled && (
-          <TouchableOpacity
-            className={`py-4 rounded-2xl items-center shadow-lg mb-8 ${isEnrolling ? 'bg-[#E24A85]/50' : 'bg-[#E24A85]'}`}
-            onPress={enroll}
-            disabled={isEnrolling || !course.is_free}
-          >
-            {isEnrolling ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text className="text-white font-bold text-base">
-                {course.is_free ? 'Enroll Now for Free' : `Buy for $${course.price}`}
-              </Text>
-            )}
-          </TouchableOpacity>
-        )}
+        <Text className="mb-3 text-2xl font-black leading-tight tracking-tight text-negro">
+          {course.title}
+        </Text>
+        <Text className="mb-6 text-base leading-relaxed text-grafito">{course.description}</Text>
 
-        {course.is_enrolled && (
-          <View className="bg-green-500/10 border border-green-500/40 py-3 rounded-2xl items-center mb-8">
-            <Text className="text-green-600 font-bold text-sm">✓ You are enrolled in this course</Text>
+        {/* Acción */}
+        {course.is_enrolled ? (
+          <View className="mb-8 flex-row items-center justify-center rounded-full bg-humo py-3.5">
+            <Ionicons name="checkmark-circle" size={18} color="#000000" />
+            <Text className="ml-2 text-sm font-bold text-negro">Ya estás inscrito en este curso</Text>
+          </View>
+        ) : (
+          <View className="mb-8">
+            <Button
+              title={
+                isEnrolling
+                  ? 'Procesando...'
+                  : course.is_free
+                  ? 'Inscribirme gratis'
+                  : `Comprar por $${course.price}`
+              }
+              variant="primary"
+              isLoading={isEnrolling}
+              onPress={enroll}
+              disabled={isEnrolling}
+            />
           </View>
         )}
 
-        <Text className="text-[#1A0811] text-lg font-bold mb-4">Course Content</Text>
+        {/* Contenido */}
+        <Text className="mb-4 text-xl font-extrabold tracking-tight text-negro">Contenido del curso</Text>
 
-        {course.modules.map((mod) => (
-          <View key={mod.uid} className="bg-white border border-black/5 rounded-2xl p-4 mb-4">
-            <Text className="text-[#1A0811] font-bold text-base mb-3">{mod.title}</Text>
+        {course.modules.map((mod, modIndex) => (
+          <View key={mod.uid} className="mb-4 overflow-hidden rounded-3xl border border-niebla bg-blanco">
+            <View className="border-b border-niebla bg-humo px-5 py-3.5">
+              <Text className="mb-0.5 text-[11px] font-bold uppercase tracking-widest text-gris">
+                Módulo {modIndex + 1}
+              </Text>
+              <Text className="text-base font-bold text-negro">{mod.title}</Text>
+            </View>
 
-            {mod.lessons.map((lesson) => (
+            {mod.lessons.map((lesson, index) => (
               <TouchableOpacity
                 key={lesson.uid}
-                className="flex-row items-center justify-between py-3 border-t border-black/5"
+                activeOpacity={lesson.can_watch ? 0.7 : 1}
+                className={`flex-row items-center justify-between px-5 py-4 ${
+                  index < mod.lessons.length - 1 ? 'border-b border-niebla' : ''
+                }`}
                 onPress={() => {
                   if (lesson.can_watch) {
-                    // 🚀 Pausamos el preview usando la API directa de expo-video
-                    if (player.playing) {
-                      player.pause();
-                    }
+                    if (player.playing) player.pause();
 
                     router.push({
                       pathname: '/lesson-detail',
@@ -153,36 +172,34 @@ export default function CourseDetailScreen() {
                         videoUrl: lesson.video_url,
                         title: lesson.title,
                         isCompletedParam: lesson.is_completed ? 'true' : 'false',
-                        // 👇 Convertimos los recursos a string para poder pasarlos por parámetros de navegación
                         resourcesParam: JSON.stringify(lesson.resources || []),
                       },
                     });
                   } else {
-                    alert('You must enroll to watch this lesson.');
+                    Alert.alert('Contenido bloqueado', 'Inscríbete al curso para ver esta lección.');
                   }
                 }}
-                activeOpacity={lesson.can_watch ? 0.7 : 1}
               >
-                <View className="flex-row items-center flex-1 mr-3">
+                <View className="mr-3 flex-1 flex-row items-center">
                   <View
-                    className={`w-8 h-8 rounded-full items-center justify-center mr-3 ${lesson.can_watch ? 'bg-[#E24A85]/15' : 'bg-black/5'}`}
+                    className={`mr-3 h-9 w-9 items-center justify-center rounded-full ${
+                      lesson.can_watch ? 'bg-negro' : 'bg-humo'
+                    }`}
                   >
                     <Ionicons
                       name={lesson.can_watch ? 'play' : 'lock-closed'}
                       size={14}
-                      color={lesson.can_watch ? '#E24A85' : 'rgba(26,8,17,0.35)'}
+                      color={lesson.can_watch ? '#FFFFFF' : '#8C8C8C'}
                     />
                   </View>
                   <Text
-                    className={`text-sm font-medium flex-1 ${lesson.can_watch ? 'text-[#1A0811]' : 'text-[#1A0811]/40'}`}
-                    numberOfLines={1}
+                    className={`flex-1 text-sm font-semibold ${lesson.can_watch ? 'text-negro' : 'text-gris'}`}
+                    numberOfLines={2}
                   >
                     {lesson.title}
                   </Text>
                 </View>
-                <Text className="text-[#1A0811]/40 text-xs">
-                  {formatDuration(lesson.duration_seconds)}
-                </Text>
+                <Text className="text-xs font-medium text-gris">{formatDuration(lesson.duration_seconds)}</Text>
               </TouchableOpacity>
             ))}
           </View>

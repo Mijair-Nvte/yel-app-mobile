@@ -1,0 +1,43 @@
+{
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://acquiescently-undemolishable-jessika.ngrok-free.dev/api/v1",
+        "EXPO_PUBLIC_COMPANY_UID": "wsk_01KHSFXMAHKBZK5YEHD87PT4HN",
+        "EXPO_PUBLIC_RC_IOS_KEY": "appl_PgDusjpVWffOEpDjdnJrWlFjNYG",
+        "EXPO_PUBLIC_RC_ANDROID_KEY": ""
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.yel.services/api/v1",
+        "EXPO_PUBLIC_COMPANY_UID": "wsk_01KFYBFC1P9ENY7CBWD2PBTE8A",
+        "EXPO_PUBLIC_RC_IOS_KEY": "appl_PgDusjpVWffOEpDjdnJrWlFjNYG",
+        "EXPO_PUBLIC_RC_ANDROID_KEY": ""
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.yel.services/api/v1",
+        "EXPO_PUBLIC_COMPANY_UID": "wsk_01KFYBFC1P9ENY7CBWD2PBTE8A",
+        "EXPO_PUBLIC_RC_IOS_KEY": "appl_PgDusjpVWffOEpDjdnJrWlFjNYG",
+        "EXPO_PUBLIC_RC_ANDROID_KEY": ""
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "ascAppId": "6838487956"
+      }
+    }
+  }
+}

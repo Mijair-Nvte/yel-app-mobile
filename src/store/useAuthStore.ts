@@ -1,14 +1,14 @@
 // src/store/useAuthStore.ts
 import { create } from 'zustand';
 import * as SecureStore from 'expo-secure-store';
+import { loginPurchases, logoutPurchases } from '@/services/purchases/purchases';
 
 interface AuthState {
   user: any | null;
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  
-  // Acciones principales
+
   setSession: (user: any, token: string) => Promise<void>;
   logout: () => Promise<void>;
   restoreSession: () => Promise<void>;
@@ -21,28 +21,31 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   token: null,
   isAuthenticated: false,
-  isLoading: true, // Arranca en true para verificar si hay sesión activa al abrir la app
+  isLoading: true,
 
   setSession: async (user, token) => {
     try {
-      // Guardado cifrado a nivel de hardware (Keychain / Keystore)
       await SecureStore.setItemAsync(TOKEN_KEY, token);
       await SecureStore.setItemAsync(USER_KEY, JSON.stringify(user));
-      
       set({ user, token, isAuthenticated: true });
-    } catch (error) {
+
+      // RevenueCat va al final y nunca lanza error: no bloquea el login
+      if (user?.id) await loginPurchases(user.id);
+    } catch (error: unknown) {
       console.error('Error al guardar la sesión de forma segura:', error);
     }
   },
 
   logout: async () => {
     try {
+      await logoutPurchases();
       await SecureStore.deleteItemAsync(TOKEN_KEY);
       await SecureStore.deleteItemAsync(USER_KEY);
-      
-      set({ user: null, token: null, isAuthenticated: false });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error al cerrar sesión:', error);
+    } finally {
+      // Siempre limpiamos el estado, aunque falle algo arriba
+      set({ user: null, token: null, isAuthenticated: false });
     }
   },
 
@@ -53,19 +56,18 @@ export const useAuthStore = create<AuthState>((set) => ({
       const userStr = await SecureStore.getItemAsync(USER_KEY);
 
       if (token && userStr) {
-        set({ 
-          token, 
-          user: JSON.parse(userStr), 
-          isAuthenticated: true 
-        });
+        const parsedUser = JSON.parse(userStr);
+        set({ token, user: parsedUser, isAuthenticated: true });
+
+        if (parsedUser?.id) await loginPurchases(parsedUser.id);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error al restaurar la sesión:', error);
-      // Si hay corrupción de datos, limpiamos por seguridad
+      // Solo llega aquí si los datos guardados están corruptos, ya no por RevenueCat
       await SecureStore.deleteItemAsync(TOKEN_KEY);
       await SecureStore.deleteItemAsync(USER_KEY);
     } finally {
       set({ isLoading: false });
     }
-  }
+  },
 }));

@@ -1,13 +1,25 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Alert,
+  StyleSheet,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Logo } from '@/components/ui/logo';
 import { useLogin } from '@/hooks/auth/useLogin';
 import { authService } from '@/services/auth.service';
+
+const LOGO: number = require('../../../assets/images/logo/Crealo_logo_negro.png');
+
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -28,7 +40,7 @@ export default function LoginScreen() {
       if (result.data.require_otp) {
         router.push({
           pathname: '/(auth)/verify-login',
-          params: { userId: result.data.user_id }
+          params: { userId: result.data.user_id },
         });
       }
     } else if (result.needsVerification) {
@@ -38,89 +50,121 @@ export default function LoginScreen() {
         [
           { text: 'Cancelar', style: 'cancel' },
           {
-            text: 'Enviar Código',
-            onPress: async () => { 
+            text: 'Enviar código',
+            onPress: async () => {
               try {
                 const res = await authService.requestVerification(email);
                 router.push({
                   pathname: '/(auth)/verify-login',
-                  params: { userId: res.user_id }
+                  params: { userId: res.user_id },
                 });
-              } catch (e) {
+              } catch {
                 Alert.alert('Error', 'No pudimos reenviar el código.');
               }
-            }
-          }
+            },
+          },
         ]
       );
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-tiza">
+    <SafeAreaView className="flex-1 bg-blanco">
+      {/* Header */}
       <View className="flex-row items-center px-5 py-3">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="w-11 h-11 rounded-full items-center justify-center bg-blanco"
+          accessibilityLabel="Regresar"
+          className="h-11 w-11 items-center justify-center rounded-full bg-humo active:opacity-70"
         >
-          <Ionicons name="chevron-back" size={22} color="#141716" />
+          <Ionicons name="chevron-back" size={22} color="#000000" />
         </TouchableOpacity>
-        <Text className="text-carbon font-bold text-lg flex-1 text-center mr-11">Log In</Text>
       </View>
 
-      <View className="px-6 mt-6 flex-1">
-        <Logo />
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingBottom: 32 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Logo */}
+          <View className="mb-8 mt-2 items-center">
+            <Image
+              source={LOGO}
+              style={styles.logo}
+              contentFit="contain"
+              accessibilityLabel="Créalo by KNN"
+            />
+          </View>
 
-        <View className="bg-blanco rounded-[32px] p-6 shadow-sm shadow-carbon/10">
+          {/* Títulos */}
+          <Text className="mb-2 text-3xl font-black tracking-tight text-negro">
+            Inicia sesión
+          </Text>
+          <Text className="mb-8 text-base font-medium text-gris">
+            Accede a tus cursos y eventos.
+          </Text>
+
+          {/* Error */}
           {error && (
-            <View className="bg-red-500/10 border border-red-500/20 p-3 rounded-2xl mb-4">
-              <Text className="text-red-600 text-sm text-center font-medium">{error}</Text>
+            <View className="mb-4 rounded-2xl border border-red-500/20 bg-red-500/10 p-3">
+              <Text className="text-center text-sm font-medium text-red-600">{error}</Text>
             </View>
           )}
 
+          {/* Formulario */}
           <Input
-            placeholder="Email"
+            placeholder="Correo electrónico"
             keyboardType="email-address"
             autoCapitalize="none"
+            autoComplete="email"
             value={email}
             onChangeText={setEmail}
           />
 
           <Input
-            placeholder="Password"
+            placeholder="Contraseña"
             isPassword
+            autoComplete="password"
             value={password}
             onChangeText={setPassword}
           />
 
           <TouchableOpacity
             onPress={() => router.push('/(auth)/forgot-password')}
-            className="mb-6 mt-1 items-end"
+            className="mb-8 mt-1 items-end"
           >
-            <Text className="text-carbon/60 font-medium text-sm">¿Olvidaste tu contraseña?</Text>
+            <Text className="text-sm font-semibold text-grafito">¿Olvidaste tu contraseña?</Text>
           </TouchableOpacity>
 
-                  <Button
-            title={isLoading ? "Cargando..." : "Log In"}
+          <Button
+            title={isLoading ? 'Ingresando...' : 'Iniciar sesión'}
             variant="primary"
             isLoading={isLoading}
             onPress={handleLogin}
             disabled={isLoading}
           />
 
-          <View className="flex-row justify-center mt-6">
-            <Text className="text-carbon/60 font-medium text-sm">¿No tienes cuenta? </Text>
+          {/* Registro */}
+          <View className="mt-8 flex-row justify-center">
+            <Text className="text-sm font-medium text-gris">¿No tienes cuenta? </Text>
             <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
-              <Text
-                className="text-carbon font-bold text-sm"
-                style={{ textDecorationLine: 'underline', textDecorationColor: '#A6AE93' }}
-              >
-                Sign Up
-              </Text>
+              <Text className="text-sm font-bold text-negro underline">Crear cuenta</Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  // Manual: mínimo 140 px de ancho
+  logo: {
+    width: 150,
+    height: 110,
+  },
+});

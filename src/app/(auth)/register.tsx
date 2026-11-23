@@ -1,12 +1,23 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Switch, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Switch,
+  StyleSheet,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Logo } from '@/components/ui/logo';
 import { useRegister } from '@/hooks/auth/useRegister';
+
+const LOGO: number = require('../../../assets/images/logo/Crealo_logo_negro.png');
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -36,99 +47,134 @@ export default function RegisterScreen() {
       password_confirmation: passwordConfirmation,
     });
 
-    // Validamos que result.data y requiresOtp existan de forma segura
     if (result.success && result.data && result.data.requiresOtp) {
       router.push({
         pathname: '/(auth)/verify-register',
-        params: { userId: result.data.user_id }
+        params: { userId: result.data.user_id },
       });
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-tiza">
+    <SafeAreaView className="flex-1 bg-blanco">
+      {/* Header */}
       <View className="flex-row items-center px-5 py-3">
         <TouchableOpacity
           onPress={() => router.back()}
-          activeOpacity={0.7}
-          className="w-11 h-11 rounded-full items-center justify-center bg-blanco"
+          accessibilityLabel="Regresar"
+          className="h-11 w-11 items-center justify-center rounded-full bg-humo active:opacity-70"
         >
-          <Ionicons name="chevron-back" size={22} color="#141716" />
+          <Ionicons name="chevron-back" size={22} color="#000000" />
         </TouchableOpacity>
-        <Text className="text-carbon font-bold text-lg flex-1 text-center mr-11">Sign Up</Text>
       </View>
 
-      <View className="px-6 mt-6 flex-1">
-        <Logo />
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingBottom: 32 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Logo */}
+          <View className="mb-8 mt-2 items-center">
+            <Image
+              source={LOGO}
+              style={styles.logo}
+              contentFit="contain"
+              accessibilityLabel="Créalo by KNN"
+            />
+          </View>
 
-        <View className="bg-blanco rounded-[32px] p-6 shadow-sm shadow-carbon/10">
+          {/* Títulos */}
+          <Text className="mb-2 text-3xl font-black tracking-tight text-negro">
+            Crea tu cuenta
+          </Text>
+          <Text className="mb-8 text-base font-medium text-gris">
+            Empieza a aprender con cursos y eventos.
+          </Text>
+
+          {/* Error */}
           {error && (
-            <View className="bg-red-500/10 border border-red-500/20 p-3 rounded-2xl mb-4">
-              <Text className="text-red-600 text-sm text-center font-medium">{error}</Text>
+            <View className="mb-4 rounded-2xl border border-red-500/20 bg-red-500/10 p-3">
+              <Text className="text-center text-sm font-medium text-red-600">{error}</Text>
             </View>
           )}
 
+          {/* Formulario */}
           <Input
-            placeholder="Name"
+            placeholder="Nombre completo"
+            autoCapitalize="words"
+            autoComplete="name"
             value={name}
             onChangeText={setName}
           />
 
           <Input
-            placeholder="Email"
+            placeholder="Correo electrónico"
             keyboardType="email-address"
             autoCapitalize="none"
+            autoComplete="email"
             value={email}
             onChangeText={setEmail}
           />
 
           <Input
-            placeholder="Password"
+            placeholder="Contraseña"
             isPassword
+            autoComplete="new-password"
             value={password}
             onChangeText={setPassword}
           />
 
           <Input
-            placeholder="Confirm Password"
+            placeholder="Confirmar contraseña"
             isPassword
+            autoComplete="new-password"
             value={passwordConfirmation}
             onChangeText={setPasswordConfirmation}
           />
 
-          <View className="flex-row items-center mb-6 mt-1 px-1">
+          {/* Aceptación */}
+          <View className="mb-8 mt-1 flex-row items-center px-1">
             <Switch
               value={acceptTerms}
               onValueChange={setAcceptTerms}
-              trackColor={{ false: 'rgba(20,23,22,0.12)', true: '#A6AE93' }}
-              thumbColor={'#ffffff'}
+              trackColor={{ false: '#E5E5E5', true: '#000000' }}
+              thumbColor="#FFFFFF"
+              ios_backgroundColor="#E5E5E5"
             />
-            <Text className="text-carbon/60 ml-3 flex-1 text-sm font-medium">
-              By proceeding, you agree to receive emails.
+            <Text className="ml-3 flex-1 text-sm font-medium text-grafito">
+              Acepto recibir correos de Créalo.
             </Text>
           </View>
 
-                 <Button
-            title={isLoading ? "Cargando..." : "Sign Up"}
+          <Button
+            title={isLoading ? 'Creando cuenta...' : 'Crear cuenta'}
             variant={acceptTerms ? 'primary' : 'disabled'}
             isLoading={isLoading}
             onPress={handleRegister}
             disabled={!acceptTerms || isLoading}
           />
 
-          <View className="flex-row justify-center mt-6">
-            <Text className="text-carbon/60 font-medium text-sm">Already have an account? </Text>
+          {/* Login */}
+          <View className="mt-8 flex-row justify-center">
+            <Text className="text-sm font-medium text-gris">¿Ya tienes cuenta? </Text>
             <TouchableOpacity onPress={() => router.push('/login')}>
-              <Text
-                className="text-carbon font-bold text-sm"
-                style={{ textDecorationLine: 'underline', textDecorationColor: '#A6AE93' }}
-              >
-                Log In
-              </Text>
+              <Text className="text-sm font-bold text-negro underline">Inicia sesión</Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  // Manual: mínimo 140 px de ancho
+  logo: {
+    width: 150,
+    height: 110,
+  },
+});

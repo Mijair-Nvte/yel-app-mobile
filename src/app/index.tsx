@@ -1,84 +1,100 @@
+// src/app/index.tsx
 import React from 'react';
-import { View, Image, StatusBar, Text, StyleSheet } from 'react-native';
+import { View, Image as RNImage, Text, StyleSheet, Pressable, useWindowDimensions } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
-import { Button } from '@/components/ui/button';
+
+const LOGO = require('../../assets/images/logo/Crealo_logo_blanco.png');
+const BACKGROUND = require('../../assets/images/bg/bghause1.jpg');
 
 export default function WelcomeScreen() {
   const router = useRouter();
+  const { height } = useWindowDimensions();
+  const isCompact = height < 700;
 
   return (
-    // 👇 Fondo con degradado de la marca: Tiza → tono intermedio → Salvia
-    <LinearGradient
-      colors={['#EEF0ED', '#CACFC0', '#A6AE93']}
-      locations={[0, 0.55, 1]}
-      start={{ x: 0.2, y: 0 }}
-      end={{ x: 0.8, y: 1 }}
-      style={{ flex: 1 }}
-    >
-      {/* 👇 Barra de estado con iconos oscuros para que resalten en el fondo claro */}
-      <StatusBar barStyle="dark-content" />
+    <View className="flex-1 bg-black">
+      <StatusBar style="light" />
 
-      {/* 👇 Imagen de fondo con opacidad sobre el degradado */}
-      <Image
-        source={require('../../assets/images/bg/bghause1.jpg')}
-        style={[StyleSheet.absoluteFill, { opacity: 0.22 }]}
+      {/* Foto de fondo */}
+      <RNImage
+        source={BACKGROUND}
+        style={[StyleSheet.absoluteFill, { opacity: 0.45 }]}
         resizeMode="cover"
       />
 
-      {/* 👇 Velo del color tiza arriba para que el logo y el título se lean bien */}
+      {/* Velo negro: oscuro arriba (logo), abre al centro y cierra abajo (texto y botones) */}
       <LinearGradient
-        colors={['rgba(238,240,237,0.85)', 'rgba(238,240,237,0)']}
-        locations={[0, 0.6]}
+        colors={['rgba(0,0,0,0.75)', 'rgba(0,0,0,0.15)', 'rgba(0,0,0,0.85)', '#000000']}
+        locations={[0, 0.3, 0.62, 1]}
         style={StyleSheet.absoluteFill}
         pointerEvents="none"
       />
 
-      <SafeAreaView className="flex-1 justify-between pb-10 pt-4">
-
-        {/* Header / Logo */}
-        <View className="items-center mt-8">
-          {/* OJO: Aquí deberás colocar tu nuevo logo de Beliv/Kenneth */}
+      <SafeAreaView className="flex-1 justify-between px-6 pt-6 pb-6">
+        {/* Logo: caja fija + contain = nunca se deforma ni se desborda */}
+        <View className="items-center pt-6">
           <Image
-            source={require('../../assets/images/logo/yellogo.png')}
-            className="w-48 h-16"
-            resizeMode="contain"
-            style={{ tintColor: '#141716' }} // 👈 Tint temporal para que el logo blanco se vea oscuro (Color Carbón)
+            source={LOGO}
+            style={styles.logo}
+            contentFit="contain"
+            accessibilityLabel="Créalo by KNN"
           />
         </View>
 
-        {/* Textos y Botones */}
-        <View className="px-6 w-full">
-          <View className="mb-10">
-            {/* 👇 Copy de la marca en Carbón */}
-            <Text className="text-carbon text-5xl font-extrabold mb-3 tracking-tight leading-tight">
-              Crecer con{'\n'}claridad.
-            </Text>
-            {/* 👇 Texto secundario suavizado */}
-            <Text className="text-carbon/70 text-lg font-medium">
-              Antes de decidir, entiende.
+        <View>
+          {/* Eyebrow */}
+          <View className="mb-5 flex-row items-center">
+            <View className="mr-3 h-px w-8 bg-white/60" />
+            <Text className="text-xs font-bold uppercase tracking-[3px] text-white/70">
+              Cursos y eventos
             </Text>
           </View>
 
-          <View className="gap-4">
-            {/* Botón Secundario (Blanco con borde salvia sutil) */}
-            <Button
-              title="Sign Up"
-              variant="secondary"
-              onPress={() => router.push('/register')}
-            />
+          {/* Titular */}
+          <Text
+            className={`font-black tracking-tight text-white ${
+              isCompact ? 'text-5xl leading-[52px]' : 'text-6xl leading-[64px]'
+            }`}
+          >
+            Crecer con{'\n'}claridad.
+          </Text>
 
-            {/* Botón Primario (Carbón) */}
-            <Button
-              title="Log In"
-              variant="primary"
+          <Text className="mt-4 mb-10 text-lg font-medium text-white/70">
+            Antes de decidir, entiende.
+          </Text>
+
+          {/* Acciones */}
+          <View className="gap-3">
+            <Pressable
+              onPress={() => router.push('/register')}
+              accessibilityRole="button"
+              className="h-14 items-center justify-center rounded-full bg-white active:opacity-80"
+            >
+              <Text className="text-base font-bold text-black">Crear cuenta</Text>
+            </Pressable>
+
+            <Pressable
               onPress={() => router.push('/login')}
-            />
+              accessibilityRole="button"
+              className="h-14 items-center justify-center rounded-full border border-white/40 active:bg-white/10"
+            >
+              <Text className="text-base font-bold text-white">Ya tengo cuenta</Text>
+            </Pressable>
           </View>
         </View>
-
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+ 
+  logo: {
+    width: 170,
+    height: 140,
+  },
+});

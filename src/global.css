@@ -4,16 +4,25 @@
 @tailwind utilities;
 
 :root {
-  /* Tipografías existentes */
+  /* Tipografías */
   --font-display: Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
   --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
   --font-serif: Georgia, 'Times New Roman', serif;
 
-  /* Nueva Paleta de Colores Beliv */
-  --color-blanco: #FFFFFF;
-  --color-carbon: #141715;
-  --color-tiza: #EEF0ED;
-  --color-salvia: #A6AE93;
-  --color-arena: #C8B69D;
+  /* Créalo by KNN — Marca (formato R G B para soportar opacidad: bg-negro/50) */
+  --color-negro: 0 0 0;          /* #000000 */
+  --color-blanco: 255 255 255;   /* #FFFFFF */
+
+  /* Neutros de interfaz */
+  --color-carbon: 17 17 17;      /* #111111 */
+  --color-grafito: 58 58 58;     /* #3A3A3A */
+  --color-gris: 140 140 140;     /* #8C8C8C */
+  --color-niebla: 229 229 229;   /* #E5E5E5 */
+  --color-humo: 244 244 244;     /* #F4F4F4 */
+
+  /* Alias de la paleta anterior (temporal, mientras migramos pantallas) */
+  --color-tiza: 244 244 244;     /* = humo */
+  --color-salvia: 229 229 229;   /* = niebla */
+  --color-arena: 229 229 229;    /* = niebla */
 }

@@ -22,89 +22,100 @@ export default function CoursesScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [tab, setTab] = useState<'explore' | 'enrolled'>('explore');
 
-  // 👈 Le pasamos el "tab" al hook para que consuma el endpoint correcto automáticamente
   const { courses, isLoading, error, refetch } = useCourses(companyUid, tab);
 
+  const query = searchQuery.toLowerCase();
   const filteredCourses =
-    courses?.filter((course) => {
-      const matchesSearch =
-        course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (course.description &&
-          course.description.toLowerCase().includes(searchQuery.toLowerCase()));
-
-      return matchesSearch; // El backend ya se encarga de traer los correctos según la API
-    }) || [];
+    courses?.filter(
+      (course) =>
+        course.title.toLowerCase().includes(query) ||
+        (course.description && course.description.toLowerCase().includes(query))
+    ) || [];
 
   return (
-    <ScreenWrapper statusBarStyle="dark">
+    <ScreenWrapper statusBarStyle="dark" backgroundColor="#FFFFFF">
       <ScrollView
-        className="px-6 pt-4"
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#E24A85" />
+          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#000000" />
         }
       >
-        <Text className="text-[#1A0811] text-2xl font-bold mb-1">Academia</Text>
-        <Text className="text-[#1A0811]/60 text-sm mb-6">
-          Encuentra tu camino y domina nuevas habilidades
+        {/* Títulos */}
+        <Text className="mb-1 text-3xl font-black tracking-tight text-negro">Academia</Text>
+        <Text className="mb-6 text-base font-medium text-gris">
+          Encuentra tu camino y domina nuevas habilidades.
         </Text>
 
-        {/* Pestañas Internas */}
-        <View className="flex-row bg-white p-1 rounded-2xl mb-6 border border-black/5">
-          <TouchableOpacity
-            onPress={() => setTab('explore')}
-            className={`flex-1 py-3 rounded-xl items-center ${tab === 'explore' ? 'bg-[#E24A85]' : ''}`}
-          >
-            <Text
-              className={`font-semibold text-sm ${tab === 'explore' ? 'text-white' : 'text-[#1A0811]/60'}`}
-            >
-              Explorar
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setTab('enrolled')}
-            className={`flex-1 py-3 rounded-xl items-center ${tab === 'enrolled' ? 'bg-[#E24A85]' : ''}`}
-          >
-            <Text
-              className={`font-semibold text-sm ${tab === 'enrolled' ? 'text-white' : 'text-[#1A0811]/60'}`}
-            >
-              Mis Cursos
-            </Text>
-          </TouchableOpacity>
+        {/* Pestañas internas */}
+        <View className="mb-4 flex-row rounded-full bg-humo p-1">
+          {(['explore', 'enrolled'] as const).map((value) => {
+            const isActive = tab === value;
+            return (
+              <TouchableOpacity
+                key={value}
+                onPress={() => setTab(value)}
+                activeOpacity={0.85}
+                className={`h-10 flex-1 items-center justify-center rounded-full ${isActive ? 'bg-negro' : ''}`}
+              >
+                <Text className={`text-sm font-bold ${isActive ? 'text-blanco' : 'text-grafito'}`}>
+                  {value === 'explore' ? 'Explorar' : 'Mis cursos'}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         {/* Buscador */}
-        <View className="flex-row items-center bg-white border border-black/5 rounded-2xl px-4 py-3 mb-6">
-          <Ionicons
-            name="search"
-            size={20}
-            color="rgba(26,8,17,0.4)"
-            style={{ marginRight: 10 }}
-          />
+        <View className="mb-6 h-12 flex-row items-center rounded-full border border-niebla bg-blanco px-4">
+          <Ionicons name="search" size={18} color="#8C8C8C" style={{ marginRight: 10 }} />
           <TextInput
-            placeholder="Buscar clases o categorías..."
-            placeholderTextColor="rgba(26,8,17,0.4)"
-            className="flex-1 text-[#1A0811] text-base"
+            placeholder="Buscar cursos..."
+            placeholderTextColor="#8C8C8C"
+            selectionColor="#000000"
+            className="h-full flex-1 font-medium text-negro"
+            style={{ fontSize: 15, paddingVertical: 0 }}
             value={searchQuery}
             onChangeText={setSearchQuery}
+            returnKeyType="search"
           />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')} accessibilityLabel="Limpiar búsqueda">
+              <Ionicons name="close-circle" size={18} color="#8C8C8C" />
+            </TouchableOpacity>
+          )}
         </View>
 
+        {/* Estados */}
         {isLoading && courses.length === 0 && (
-          <ActivityIndicator size="large" color="#E24A85" className="mt-10" />
+          <ActivityIndicator size="large" color="#000000" className="mt-10" />
         )}
 
-        {error && <Text className="text-red-500 text-center mt-10">{error}</Text>}
+        {error && (
+          <View className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/10 p-4">
+            <Text className="text-center text-sm font-medium text-red-600">{error}</Text>
+          </View>
+        )}
 
         {!isLoading && filteredCourses.length === 0 && !error && (
-          <Text className="text-[#1A0811]/50 text-center mt-10">
-            {tab === 'enrolled'
-              ? 'Aún no estás inscrito en ningún curso.'
-              : 'No se encontraron cursos.'}
-          </Text>
+          <View className="mt-10 items-center">
+            <View className="mb-4 h-14 w-14 items-center justify-center rounded-full bg-humo">
+              <Ionicons
+                name={tab === 'enrolled' ? 'school-outline' : 'search-outline'}
+                size={24}
+                color="#000000"
+              />
+            </View>
+            <Text className="text-center text-sm font-medium text-gris">
+              {tab === 'enrolled'
+                ? 'Aún no estás inscrito en ningún curso.'
+                : 'No se encontraron cursos.'}
+            </Text>
+          </View>
         )}
 
+        {/* Lista */}
         {filteredCourses.map((item) => (
           <CourseCard
             key={item.uid}
@@ -115,25 +126,17 @@ export default function CoursesScreen() {
             isFree={item.is_free}
             price={item.price}
             duration={`${item.modules_count} módulos`}
-            // 👇 Si estamos en "Mis cursos" le enviamos el porcentaje exacto que manda el backend
-            progress={tab === 'enrolled' ? (item.progress_percentage || 0) : 0}
+            progress={tab === 'enrolled' ? item.progress_percentage || 0 : 0}
             onPress={() => {
               if (tab === 'enrolled') {
-              
                 router.push({
                   pathname: '/(app)/course-player',
-                  params: {
-                    courseUid: item.uid,
-                  },
+                  params: { courseUid: item.uid },
                 });
               } else {
-            
                 router.push({
                   pathname: '/course-detail',
-                  params: {
-                    courseUid: item.uid,
-                    slug: item.slug,
-                  },
+                  params: { courseUid: item.uid, slug: item.slug },
                 });
               }
             }}

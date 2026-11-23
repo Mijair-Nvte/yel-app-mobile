@@ -6,7 +6,7 @@ interface InputProps extends TextInputProps {
   isPassword?: boolean;
 }
 
-export function Input({ isPassword, className, onFocus, onBlur, ...props }: InputProps) {
+export function Input({ isPassword, className, onFocus, onBlur, style, ...props }: InputProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState(false);
 
@@ -16,31 +16,43 @@ export function Input({ isPassword, className, onFocus, onBlur, ...props }: Inpu
     ? 'mail-outline'
     : null;
 
-  const iconColor = focused ? '#A6AE93' : 'rgba(166,174,147,0.9)';
+  const iconColor = focused ? '#000000' : '#8C8C8C';
 
   return (
     <View
-      className={`flex-row items-center rounded-full mb-4 px-5 h-14 bg-blanco ${className || ''}`}
-      style={{
-        borderWidth: 1,
-        // Salvia sutil en reposo, un poco más presente al enfocar
-        borderColor: focused ? 'rgba(166,174,147,0.9)' : 'rgba(166,174,147,0.35)',
-      }}
+      className={`mb-4 h-14 flex-row items-center rounded-full border bg-blanco px-5 ${
+        focused ? 'border-negro' : 'border-niebla'
+      } ${className || ''}`}
     >
       {leftIcon && (
         <Ionicons name={leftIcon} size={20} color={iconColor} style={{ marginRight: 12 }} />
       )}
       <TextInput
-        className="flex-1 text-carbon text-base font-medium"
-        placeholderTextColor="rgba(20,23,22,0.4)"
-        selectionColor="#A6AE93"
+        // Sin "text-base": esa clase agrega lineHeight y en iOS corta la p, j, g, y al escribir
+        className="h-full flex-1 font-medium text-negro"
+        style={[
+          {
+            fontSize: 16,
+            paddingVertical: 0,
+            textAlignVertical: 'center', // Android
+            includeFontPadding: false,   // Android
+          },
+          style,
+        ]}
+        placeholderTextColor="#8C8C8C"
+        selectionColor="#000000"
+        cursorColor="#000000"
         secureTextEntry={isPassword && !showPassword}
         onFocus={(e) => { setFocused(true); onFocus?.(e); }}
         onBlur={(e) => { setFocused(false); onBlur?.(e); }}
         {...props}
       />
       {isPassword && (
-        <TouchableOpacity onPress={() => setShowPassword(!showPassword)} className="pl-3">
+        <TouchableOpacity
+          onPress={() => setShowPassword(!showPassword)}
+          accessibilityLabel={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+          className="pl-3"
+        >
           <Ionicons
             name={showPassword ? 'eye-off-outline' : 'eye-outline'}
             size={20}

@@ -53,6 +53,7 @@ export interface CourseDetail {
   modules: Module[];
   price: number;
   resources?: Resource[];
+  revenuecat_entitlement_id?: string;
 }
 
 export const courseService = {

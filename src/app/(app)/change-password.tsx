@@ -1,9 +1,12 @@
 // src/app/(app)/change-password.tsx
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { isAxiosError } from 'axios';
 import { ScreenWrapper } from '@/components/common/ScreenWrapper';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { api } from '@/services/api';
 
 export default function ChangePasswordScreen() {
@@ -34,97 +37,102 @@ export default function ChangePasswordScreen() {
 
     try {
       setIsLoading(true);
-      // Endpoint estándar para cambio de contraseña con sesión activa
       await api.put('/account/password', {
         current_password: currentPassword,
         password: newPassword,
         password_confirmation: newPasswordConfirmation,
       });
 
-      Alert.alert('¡Éxito!', 'Tu contraseña ha sido actualizada correctamente.', [
-        { text: 'OK', onPress: () => router.back() }
+      Alert.alert('¡Listo!', 'Tu contraseña se actualizó correctamente.', [
+        { text: 'Aceptar', onPress: () => router.back() },
       ]);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al actualizar la contraseña. Verifica tu contraseña actual.');
+    } catch (err: unknown) {
+      const fallback = 'No pudimos actualizar la contraseña. Verifica tu contraseña actual.';
+      setError(isAxiosError<{ message?: string }>(err) ? err.response?.data?.message ?? fallback : fallback);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <ScreenWrapper statusBarStyle="dark" >
+    <ScreenWrapper statusBarStyle="dark" backgroundColor="#FFFFFF">
       {/* Header */}
-      <View className="flex-row items-center px-5 py-4 ">
-        <TouchableOpacity 
-          onPress={() => router.back()} 
-          className="w-10 h-10 rounded-full items-center justify-center bg-gray-100 border border-black/5"
+      <View className="flex-row items-center px-5 py-3">
+        <TouchableOpacity
+          onPress={() => router.back()}
+          accessibilityLabel="Regresar"
+          className="h-11 w-11 items-center justify-center rounded-full bg-humo active:opacity-70"
         >
-          <Ionicons name="chevron-back" size={20} color="#1A0811" />
+          <Ionicons name="chevron-back" size={22} color="#000000" />
         </TouchableOpacity>
-        <Text className="text-[#1A0811] font-bold text-lg flex-1 text-center mr-10">Cambiar Contraseña</Text>
       </View>
 
-      <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
-        
-        {error && (
-          <View className="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl mb-6">
-            <Text className="text-red-600 text-sm text-center font-medium">{error}</Text>
-          </View>
-        )}
-
-        {/* Formulario */}
-        <View className="mb-8">
-          <View>
-            <Text className="text-[#1A0811]/70 text-xs mb-1.5 font-bold ml-1 uppercase tracking-wider">Contraseña Actual</Text>
-            <TextInput 
-              value={currentPassword} 
-              onChangeText={setCurrentPassword} 
-              placeholder="••••••••" 
-              placeholderTextColor="#9CA3AF" 
-              secureTextEntry
-              className="bg-white border border-gray-200 rounded-2xl px-4 py-3.5 text-[#1A0811] text-base font-medium shadow-sm" 
-            />
-          </View>
-
-          <View className="mt-5">
-            <Text className="text-[#1A0811]/70 text-xs mb-1.5 font-bold ml-1 uppercase tracking-wider">Nueva Contraseña</Text>
-            <TextInput 
-              value={newPassword} 
-              onChangeText={setNewPassword} 
-              placeholder="••••••••" 
-              placeholderTextColor="#9CA3AF" 
-              secureTextEntry
-              className="bg-white border border-gray-200 rounded-2xl px-4 py-3.5 text-[#1A0811] text-base font-medium shadow-sm" 
-            />
-          </View>
-
-          <View className="mt-5">
-            <Text className="text-[#1A0811]/70 text-xs mb-1.5 font-bold ml-1 uppercase tracking-wider">Confirmar Nueva Contraseña</Text>
-            <TextInput 
-              value={newPasswordConfirmation} 
-              onChangeText={setNewPasswordConfirmation} 
-              placeholder="••••••••" 
-              placeholderTextColor="#9CA3AF" 
-              secureTextEntry
-              className="bg-white border border-gray-200 rounded-2xl px-4 py-3.5 text-[#1A0811] text-base font-medium shadow-sm" 
-            />
-          </View>
-        </View>
-
-        {/* Botón Guardar */}
-        <TouchableOpacity
-          onPress={handleChangePassword}
-          disabled={isLoading}
-          className={`py-4 rounded-2xl items-center shadow-md bg-[#E24A85] ${isLoading ? 'opacity-70' : 'active:scale-[0.98]'}`}
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 40 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          {isLoading ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <Text className="text-white font-bold text-base">Actualizar Contraseña</Text>
-          )}
-        </TouchableOpacity>
+          {/* Icono */}
+          <View className="mb-6 h-14 w-14 items-center justify-center rounded-2xl bg-negro">
+            <Ionicons name="lock-closed-outline" size={26} color="#FFFFFF" />
+          </View>
 
-      </ScrollView>
+          {/* Títulos */}
+          <Text className="mb-2 text-3xl font-black tracking-tight text-negro">Cambiar contraseña</Text>
+          <Text className="mb-8 text-base font-medium leading-relaxed text-gris">
+            Usa al menos 8 caracteres para tu nueva contraseña.
+          </Text>
+
+          {/* Error */}
+          {error && (
+            <View className="mb-4 rounded-2xl border border-red-500/20 bg-red-500/10 p-3">
+              <Text className="text-center text-sm font-medium text-red-600">{error}</Text>
+            </View>
+          )}
+
+          {/* Formulario */}
+          <Text className="mb-1.5 ml-1 text-xs font-bold text-negro">Contraseña actual</Text>
+          <Input
+            placeholder="Tu contraseña actual"
+            isPassword
+            autoComplete="current-password"
+            value={currentPassword}
+            onChangeText={setCurrentPassword}
+          />
+
+          <Text className="mb-1.5 ml-1 mt-2 text-xs font-bold text-negro">Nueva contraseña</Text>
+          <Input
+            placeholder="Mínimo 8 caracteres"
+            isPassword
+            autoComplete="new-password"
+            value={newPassword}
+            onChangeText={setNewPassword}
+          />
+
+          <Text className="mb-1.5 ml-1 text-xs font-bold text-negro">Confirmar nueva contraseña</Text>
+          <Input
+            placeholder="Repite la nueva contraseña"
+            isPassword
+            autoComplete="new-password"
+            value={newPasswordConfirmation}
+            onChangeText={setNewPasswordConfirmation}
+          />
+
+          <View className="mt-4">
+            <Button
+              title={isLoading ? 'Actualizando...' : 'Actualizar contraseña'}
+              variant="primary"
+              isLoading={isLoading}
+              onPress={handleChangePassword}
+              disabled={isLoading}
+            />
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </ScreenWrapper>
   );
 }

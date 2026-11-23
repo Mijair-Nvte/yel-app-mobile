@@ -7,21 +7,21 @@ import { Button } from '@/components/ui/button';
 import { useLogin } from '@/hooks/auth/useLogin';
 import { useAuthStore } from '@/store/useAuthStore';
 
+const OTP_LENGTH = 6;
+
 export default function VerifyLoginScreen() {
   const router = useRouter();
   const { userId } = useLocalSearchParams();
   const [otpCode, setOtpCode] = useState('');
   const [focused, setFocused] = useState(false);
-  
-  // 1. SOLUCIÓN AL ERROR DE TYPESCRIPT: Usamos <any> para evitar el conflicto 
-  // estricto de tipos entre las interfaces de React Native.
-  const otpInputRef = useRef<any>(null);
+
+const otpInputRef = useRef<React.ComponentRef<typeof TextInput>>(null);
 
   const { verifyOtp, isLoading, error, setError } = useLogin();
   const setSession = useAuthStore((state) => state.setSession);
 
   const handleVerify = async () => {
-    if (otpCode.length !== 6) {
+    if (otpCode.length !== OTP_LENGTH) {
       setError('El código debe tener 6 dígitos.');
       return;
     }
@@ -32,96 +32,100 @@ export default function VerifyLoginScreen() {
     });
 
     if (result.success) {
-      // Retrasamos el guardado un instante. Esto permite que el hook useLogin termine 
-      // su renderizado visual (quitando el isLoading) antes de que el Layout nos cambie de pantalla.
+      // Retrasamos el guardado un instante para que useLogin termine su render
+      // antes de que el Layout cambie de pantalla.
       setTimeout(async () => {
         await setSession(result.data.user, result.data.token);
-      }, 150); 
+      }, 150);
     }
   };
 
+  const isComplete = otpCode.length === OTP_LENGTH;
+
   return (
-    <SafeAreaView className="flex-1 bg-tiza">
+    <SafeAreaView className="flex-1 bg-blanco">
+      {/* Header */}
       <View className="flex-row items-center px-5 py-3">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="w-11 h-11 rounded-full items-center justify-center bg-blanco"
+          accessibilityLabel="Regresar"
+          className="h-11 w-11 items-center justify-center rounded-full bg-humo active:opacity-70"
         >
-          <Ionicons name="chevron-back" size={22} color="#141716" />
+          <Ionicons name="chevron-back" size={22} color="#000000" />
         </TouchableOpacity>
-        <Text className="text-carbon font-bold text-lg flex-1 text-center mr-11">Verificación</Text>
       </View>
 
-      <View className="px-6 mt-8 flex-1">
-        <Text className="text-carbon text-3xl font-extrabold mb-3 tracking-tight">Autenticación de 2 Pasos</Text>
-        <Text className="text-carbon/70 font-medium text-base mb-8 leading-relaxed">
-          Por tu seguridad, hemos enviado un código de acceso a tu correo electrónico.
+      <View className="mt-4 flex-1 px-6">
+        {/* Icono */}
+        <View className="mb-6 h-14 w-14 items-center justify-center rounded-2xl bg-negro">
+          <Ionicons name="shield-checkmark-outline" size={26} color="#FFFFFF" />
+        </View>
+
+        {/* Títulos */}
+        <Text className="mb-2 text-3xl font-black tracking-tight text-negro">
+          Verifica tu acceso
+        </Text>
+        <Text className="mb-8 text-base font-medium leading-relaxed text-gris">
+          Por tu seguridad, enviamos un código de 6 dígitos a tu correo electrónico.
         </Text>
 
-        <View className="bg-blanco rounded-[32px] p-6 shadow-sm shadow-carbon/10">
-          {error && (
-            <View className="bg-red-500/10 border border-red-500/20 p-3 rounded-2xl mb-4">
-              <Text className="text-red-600 text-sm text-center font-medium">{error}</Text>
-            </View>
-          )}
-
-          {/* Icono decorativo */}
-          <View className="items-center mb-6">
-            <View className="w-14 h-14 rounded-2xl bg-salvia/30 items-center justify-center">
-              <Ionicons name="shield-checkmark-outline" size={26} color="#141716" />
-            </View>
+        {/* Error */}
+        {error && (
+          <View className="mb-4 rounded-2xl border border-red-500/20 bg-red-500/10 p-3">
+            <Text className="text-center text-sm font-medium text-red-600">{error}</Text>
           </View>
+        )}
 
-          {/* Casillas redondas del código (TU DISEÑO ORIGINAL) */}
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => otpInputRef.current?.focus()}
-            className="flex-row gap-2 mb-6"
-          >
-            {[0, 1, 2, 3, 4, 5].map((i) => {
-              const isActive = focused && i === Math.min(otpCode.length, 5);
-              return (
-                <View
-                  key={i}
-                  className="flex-1 rounded-full bg-blanco items-center justify-center"
-                  style={{
-                    aspectRatio: 1,
-                    borderWidth: 1,
-                    borderColor: isActive ? 'rgba(166,174,147,0.9)' : 'rgba(166,174,147,0.35)',
-                  }}
-                >
-                  <Text className="text-carbon text-xl font-bold">{otpCode[i] ?? ''}</Text>
-                </View>
-              );
-            })}
-          </TouchableOpacity>
+        {/* Casillas del código */}
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => otpInputRef.current?.focus()}
+          className="mb-8 flex-row gap-2"
+        >
+          {Array.from({ length: OTP_LENGTH }, (_, i) => {
+            const isActive = focused && i === Math.min(otpCode.length, OTP_LENGTH - 1);
+            const isFilled = otpCode[i] !== undefined;
 
-          {/* Input real oculto que captura el código */}
-          <TextInput
-            ref={otpInputRef}
-            value={otpCode}
-            onChangeText={setOtpCode}
-            keyboardType="number-pad"
-            maxLength={6}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            caretHidden
-            style={{ position: 'absolute', opacity: 0, width: 1, height: 1 }}
-          />
+            return (
+              <View
+                key={i}
+                className={`flex-1 items-center justify-center rounded-2xl border ${isActive
+                    ? 'border-negro bg-blanco'
+                    : isFilled
+                      ? 'border-niebla bg-humo'
+                      : 'border-niebla bg-blanco'
+                  }`}
+                style={{ aspectRatio: 0.85 }}
+              >
+                <Text className="text-2xl font-bold text-negro">{otpCode[i] ?? ''}</Text>
+              </View>
+            );
+          })}
+        </TouchableOpacity>
 
-          {/* 
-            2. SOLUCIÓN AL ERROR LINKINGCONTEXT: 
-            Se usa `undefined` en lugar de `{}` cuando no está cargando para evitar 
-            que NativeWind colapse el renderizado del botón al desmontarse la pantalla.
-          */}
-                 <Button
-            title={isLoading ? "Verificando..." : "Ingresar"}
-            variant={otpCode.length !== 6 ? 'disabled' : 'primary'}
-            isLoading={isLoading}
-            onPress={handleVerify}
-            disabled={isLoading || otpCode.length !== 6}
-          />
-        </View>
+        {/* Input real oculto que captura el código */}
+        <TextInput
+          ref={otpInputRef}
+          value={otpCode}
+          onChangeText={setOtpCode}
+          keyboardType="number-pad"
+          textContentType="oneTimeCode"
+          autoComplete="one-time-code"
+          maxLength={OTP_LENGTH}
+          autoFocus
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          caretHidden
+          style={{ position: 'absolute', opacity: 0, width: 1, height: 1 }}
+        />
+
+        <Button
+          title={isLoading ? 'Verificando...' : 'Ingresar'}
+          variant={isComplete ? 'primary' : 'disabled'}
+          isLoading={isLoading}
+          onPress={handleVerify}
+          disabled={isLoading || !isComplete}
+        />
       </View>
     </SafeAreaView>
   );
